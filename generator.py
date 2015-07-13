@@ -12,7 +12,7 @@ inFileName = "default in.txt"
 outFileName = "default out.txt"
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[1:], "sio", ["silent", "infile", "outfile"] )
+	options, argsLeft = getopt.getopt( sys.argv[1:], "sio", ["silent", "infile=", "outfile="] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
@@ -57,27 +57,31 @@ nodes = dict()
 sentenceStarts = []
 previousWord = ""
 for line in lines:
-	for word in line:
-		isEnd = "." in word
-		if isEnd:
-			word = word.strip( "." )
+	if( len( line ) > 0 ):
+		for word in line:
+			isEnd = word.endswith( "." )
+			if isEnd:
+				a = 0 #do nothing useful
+				#word = word.strip( "." )
 		
-		if word not in nodes.keys():
-			nodes[ word ] = MarkovNode( isEnd )
-		if not previousWord == "":
-			numLinks = nodes[ previousWord ].addLink( word ) #nodes[ word ] )
-			if nodes[ previousWord ].isEndOfSentence:
+			if word not in nodes.keys():
+				nodes[ word ] = MarkovNode( isEnd )
+			if not previousWord == "":
+				numLinks = nodes[ previousWord ].addLink( word ) #nodes[ word ] )
+				if nodes[ previousWord ].isEndOfSentence:
+					sentenceStarts.append( word )
+			else:
 				sentenceStarts.append( word )
-		else:
-			sentenceStarts.append( word )
 		
-		previousWord = word
+			previousWord = word
 
-currentWord = random.choice( sentenceStarts )
-sentence = currentWord
-while nodes[ currentWord ].hasLinks() and not nodes[ currentWord ].isEndOfSentence:
-	currentWord = nodes[ currentWord ].getRandomLinkedWord()
-	sentence += " " + currentWord
+for i in range ( 1 ):
+	print("----------------------")
+	currentWord = random.choice( sentenceStarts )
+	sentence = currentWord
+	while nodes[ currentWord ].hasLinks() and not nodes[ currentWord ].isEndOfSentence:
+		currentWord = nodes[ currentWord ].getRandomLinkedWord()
+		sentence += " " + currentWord
 
-sentence += "."
-print( sentence )
+	#sentence += "."
+	print( sentence )
