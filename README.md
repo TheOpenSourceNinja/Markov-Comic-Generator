@@ -7,6 +7,17 @@ This program was inspired by but is not otherwise connected with Josh Millard's 
 ## Why?
 For fun.
 
+## Noteworthy files and folders in this repository
+* generator.py: The Python module responsible for generating Markov chains
+* main.py: The Python script responsible for everything else
+* LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
+* README.md: This file
+* Nina fonts: A directory containing three variants of Nina Paley's handwriting-based TrueType font. These are not part of the Markov Comic Generator project; they are included so that you will have at least one comic-ish font.
+* Nina fonts/LICENSE AND ATTRIBUTION: License and attribution information for the Nina fonts.
+* images: The directory in which input images should go. Contains one sample image.
+* transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
+* word-bubbles: The directory in which definition files should go. Contains one sample file.
+
 ## Input file formats
 ## Common
 Comments - that is, notes in the input files that are intended to be ignored by the program - are preceded by "//". The // and everything coming after the // until the next line break will be ignored.

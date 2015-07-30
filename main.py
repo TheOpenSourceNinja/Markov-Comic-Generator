@@ -6,19 +6,43 @@ import random
 import os
 import fontconfig
 import textwrap
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageFont, ImageDraw, ImageColor
 from generator import Generator
 
-silenceDefault = False
-inDirDefault = "./"
-outTextFileNameDefault = "default out.txt"
-outImageFileNameDefault = "default out.png"
-numberOfComicsDefault = 1
-silence = silenceDefault
-inDir = inDirDefault
-outTextFileName = outTextFileNameDefault
-outImageFileName = outImageFileNameDefault
-numberOfComics = numberOfComicsDefault
+#Exit statuses
+#These are copied from my /usr/include/sysexits.h. Only statuses possibly relevant to this program were copied.
+EX_OK = 0 #No problems
+EX_USAGE = 64 #Command line error
+EX_DATAERR = 65 #Data format error
+EX_NOINPUT = 66 #Input not openable
+EX_CANTCREAT = 73 #Can't create output file
+EX_NOPERM = 77 #Permission error
+
+silence = silenceDefault = False
+inDir = inDirDefault = "./"
+outTextFileName = outTextFileNameDefault = "default out.txt"
+outImageFileName = outImageFileNameDefault = "default out.png"
+numberOfComics = numberOfComicsDefault = 1
+saveForWeb = saveForWebDefault = False
+
+def findCharsPerLine( text, font, maxWidth ):
+	charsPerLine = maxWidth // font.getsize( "L" )[0]
+	
+	while font.getsize( text[ :charsPerLine ] )[0] > maxWidth:
+		charsPerLine -= 1
+	
+	return charsPerLine
+
+def rewrap( text, font, maxWidth ):
+	charsPerLine = findCharsPerLine( text, font, maxWidth )
+	temp = textwrap.wrap( text, width = charsPerLine )
+	
+	result = []
+	for line in temp:
+		line = line.center( charsPerLine )
+		result.append( line )
+	
+	return result
 
 def usage():
 	print( "😕" ) #In case of transcoding errors: this should be U+1F615, "confused face"
@@ -28,13 +52,14 @@ def usage():
 	print( "🞍 -o or --outtextfile: The name of a text file to save the resulting sentences to. Defaults to", outTextFileNameDefault )
 	print( "🞍 -p or --outimagefile: The name of an image file to save the resulting comic to. Numbers will be appended if multiple comics are generated. Defaults to", outImageFileNameDefault )
 	print( "🞍 -n or --number: The number of comics to generate. Defaults to", numberOfComicsDefault )
+	print( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[1:], "si:o:p:n:", ["silent", "indir=", "outtextfile=", "outimagefile=", "number="] )
+	options, argsLeft = getopt.getopt( sys.argv[1:], "swi:o:p:n:", ["silent", "saveforweb", "indir=", "outtextfile=", "outimagefile=", "number="] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
-	sys.exit(2);
+	sys.exit( EX_USAGE );
 
 for option in options:
 	if option[0] == "-s" or option[0] == "--silence":
@@ -47,17 +72,30 @@ for option in options:
 		outImageFileName = option[1]
 	elif option[0] == "-n" or option[0] == "--number":
 		numberOfComics = int( option[1].strip( "=" ) )
+	elif option[0] == "-w" or option[0] == "--saveforweb":
+		saveForWeb = True
 
 if not silence:
 	print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
 
 wordBubblesDir = os.path.join( inDir, "word-bubbles" )
-wordBubbleFileName = random.choice( os.listdir( wordBubblesDir ) )
+
+try:
+	wordBubbleFileName = random.choice( os.listdir( wordBubblesDir ) )
+except IndexError as error:
+	print( error, file=sys.stderr )
+	exit( EX_NOINPUT )
+
 comicID = os.path.splitext( wordBubbleFileName )[0]
 wordBubbleFileName = os.path.join( wordBubblesDir, wordBubbleFileName )
 if not silence:
 	print( wordBubbleFileName )
-wordBubbleFile = open( file=wordBubbleFileName, mode="rt" )
+
+try:
+	wordBubbleFile = open( file=wordBubbleFileName, mode="rt" )
+except OSError as erro:
+	print( error, file=sys.stderr )
+	exit( EX_NOINPUT )
 
 lookForSpeakers = True
 while lookForSpeakers:
@@ -83,15 +121,24 @@ if not silence:
 imageDir = os.path.join( inDir, "images" )
 inImageFileName = os.path.join( imageDir, comicID + ".png" )
 
-image = Image.open( inImageFileName )
-
-
 try:
-	font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=15 )
+	image = Image.open( inImageFileName ).convert() #Text rendering looks better if we ensure the image's mode is not palette-based. Calling convert() with no mode argument does this.
+except IOError as error:
+	print( error, file=sys.stderr )
+	exit( EX_NOINPUT )
+
+normalFontSize = 30
+try:
+	font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=normalFontSize )
 except IOError:
+	print( error, "\nUsing default font instead.", file=sys.stderr )
 	font = ImageFont.load_default()
 
-outFile = open( file=outTextFileName, mode="at" )
+try:
+	outFile = open( file=outTextFileName, mode="at" )
+except OSError as error:
+	print( error, "\nUsing standard output instead", file=sys.stderr )
+	outFile = sys.stdout
 
 for line in wordBubbleFile:
 	line = line.partition( "//" )[0].strip()
@@ -106,8 +153,6 @@ for line in wordBubbleFile:
 		if not silence:
 			print( character, ": ", text, sep="" )
 		
-		print( line[ 1: ] )
-		
 		topLeftX = int( line[1] )
 		topLeftY = int( line[2] )
 		bottomRightX = int( line[3] )
@@ -117,24 +162,57 @@ for line in wordBubbleFile:
 		wordBubble = image.crop( box )
 		draw = ImageDraw.Draw( wordBubble )
 		
-		charsPerLine = 1
-		while charsPerLine <= len( text ) and font.getsize( text[:charsPerLine] )[0] < bottomRightX - topLeftX:
-			charsPerLine += 1
-			print( text[ :charsPerLine ] )
-		
-		newText = textwrap.wrap( text, width = charsPerLine )
-		print( newText )
+		newText = rewrap( text, font, bottomRightX - topLeftX )
 		
 		margin = 0
-		offset = 0
+		offset = originalOffset = 0
+		fontSize = normalFontSize
+		goodSizeFound = False
+		usedFont = font
+		while not goodSizeFound:
+			offset = originalOffset
+			for line in newText:
+				offset += usedFont.getsize( line )[1]
+			if offset > bottomRightY - topLeftY:
+				fontSize -= 1
+				try:
+					usedFont = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=fontSize )
+				except IOError as error:
+					print( error, "\nUsing default font instead.", file=sys.stderr )
+					usedFont = ImageFont.load_default()
+				newText = rewrap( text, usedFont, bottomRightX - topLeftX )
+			else:
+				goodSizeFound = True
+		
+		midX = int( wordBubble.size[0] / 2 )
+		midY = int( wordBubble.size[1] / 2 )
+		
+		try: #Choose a text color that will be visible against the background
+			backgroundColor = wordBubble.getpixel( ( midX, midY ) )
+			textColor = ( 255-backgroundColor[0], 255-backgroundColor[1], 255-backgroundColor[2], 255 )
+		except ValueError:
+			textColor = "black"
+			
+		offset = originalOffset
 		for line in newText:
-			draw.text( ( margin, offset ), line, font=font )
-			offset += font.getsize( line )[1]
+			draw.text( ( margin, offset ), line, font=usedFont, fill=textColor )
+			offset += usedFont.getsize( line )[1]
+			if offset > bottomRightY - topLeftY and not silence:
+				print( "Warning: Text is too big vertically.", file=sys.stderr )
 		
 		image.paste( wordBubble, box )
-
+		
+wordBubbleFile.close()
 outFile.close()
 
-image.save( outImageFileName )
+try:
+	if saveForWeb:
+		image = image.convert( mode = "P", palette="WEB" )
+		image.save( outImageFileName, format="PNG", optimize=True )
+	else:
+		image.save( outImageFileName, format="PNG" )
+except IOError as error:
+	print( error, file=sys.stderr )
+	exit( EX_CANTCREAT )
 
-wordBubbleFile.close()
+exit( EX_OK )
