@@ -66,7 +66,7 @@ All following lines should take the form of one character label, a tab, the X co
 If multiple characters use the same speech bubble (saying the same thing at the same time), create separate lines in the file - one for each speaker, one line coming immediately after the other - with identical speech bubble coordinates.
 
 #### Example
-	//The image is stored as images/20101210.png; this definition file is stored as definitions/20101210.csv
+	//The image is stored as images/20101210.png; this definition file is stored as definitions/20101210.tsv
 	E	M //List of speakers
 	//Speaker	X	Y	X	Y
 	E	37	6	180	69
