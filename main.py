@@ -5,6 +5,7 @@ import sys
 import random
 import os
 import fontconfig
+import textwrap
 from PIL import Image, ImageFont, ImageDraw
 from generator import Generator
 
@@ -86,7 +87,7 @@ image = Image.open( inImageFileName )
 
 
 try:
-	font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf" )
+	font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=15 )
 except IOError:
 	font = ImageFont.load_default()
 
@@ -116,7 +117,19 @@ for line in wordBubbleFile:
 		wordBubble = image.crop( box )
 		draw = ImageDraw.Draw( wordBubble )
 		
-		draw.text( ( 0, 0 ), text, font=font )
+		charsPerLine = 1
+		while charsPerLine <= len( text ) and font.getsize( text[:charsPerLine] )[0] < bottomRightX - topLeftX:
+			charsPerLine += 1
+			print( text[ :charsPerLine ] )
+		
+		newText = textwrap.wrap( text, width = charsPerLine )
+		print( newText )
+		
+		margin = 0
+		offset = 0
+		for line in newText:
+			draw.text( ( margin, offset ), line, font=font )
+			offset += font.getsize( line )[1]
 		
 		image.paste( wordBubble, box )
 
