@@ -48,6 +48,7 @@ Word capitalization should be as it is in the original comic strip.
 	20101210 //Date serves as ID number
 	E: WOULD YOU RATHER BE *RIGHT,* OR *HAPPY?* //Eunice is talking
 	M: *NEITHER!*
+	//E: *NEITHER!* //If Mimi and Eunice both said this at the same time, we would uncomment this line.
 	M: I'D RATHER BE *RICH!* //Note: For some reason Mimi and Eunice speak in all caps. See for yourself: http://mimiandeunice.com/2010/12/10/right-or-happy-iii/
 
 ### Strips (The Visual Stuff)
