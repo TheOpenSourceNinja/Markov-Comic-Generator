@@ -2,6 +2,8 @@
 
 import getopt
 import sys
+import random
+import os
 from generator import Generator
 
 silenceDefault = False
@@ -41,19 +43,39 @@ for option in options:
 if not silence:
 	print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
 
-mimi = Generator( charLabel="M" )
-eunice = Generator( charLabel="E" )
-mimi.buildDatabase( inDir )
-eunice.buildDatabase( inDir )
+wordBubblesDir = os.path.join( inDir, "word-bubbles" )
+wordBubbleFileName = os.path.join( wordBubblesDir, random.choice( os.listdir( wordBubblesDir ) ) )
+if not silence:
+	print( wordBubbleFileName )
+wordBubbleFile = open( file=wordBubbleFileName, mode="rt" )
+
+lookForSpeakers = True
+while lookForSpeakers:
+	line = wordBubbleFile.readline()
+	line = line.partition( "//" )[0].strip()
+	if len( line ) > 0:
+		speakers = line.split( "\t" )
+		if len( speakers ) > 0:
+			lookForSpeakers = False
+
+if not silence:
+	print( speakers )
+
+generators = []
+for speaker in speakers:
+	newGenerator = Generator( charLabel = speaker )
+	newGenerator.buildDatabase( inDir )
+	generators.append( newGenerator )
 
 outFile = open( file=outFileName, mode="at" )
 
-mimisDialog = mimi.generate( 1 )
-eunicesDialog = eunice.generate( 1 )
-print( mimi.charLabel, ": ", mimisDialog, sep="", file=outFile )
-print( eunice.charLabel, ": ", eunicesDialog, sep="", file=outFile )
-if not silence:
-	print( mimi.charLabel, ": ", mimisDialog, sep="" )
-	print( eunice.charLabel, ": ", eunicesDialog, sep="" )
+for generator in generators:
+	text = generator.generate( 1 )
+	print( generator.charLabel, ": ", text, sep="", file=outFile )
+	if not silence:
+		print( generator.charLabel, ": ", text, sep="" )
+
 
 outFile.close()
+
+wordBubbleFile.close()
