@@ -38,7 +38,8 @@ Different panels or balloons go on different lines. This just makes for a cleane
 In the case of shared dialog (e.g. two or more characters say the same thing at the same time), a separate copy of the dialog should be given to each character on two consecutive lines.
 
 This program ignores emphasis. However, it is recommended for the purpose of accurate transcription that emphasis be added to words in the following ways:
-* *asterisks* surrounding a word represent bold text
+
+* \*asterisks\* surrounding a word represent bold text
 * /slashes/ surrounding a word represent italic text
 
 Word capitalization should be as it is in the original comic strip.

@@ -1,6 +1,0 @@
-This is a small sample input file.
-This is a large sample input file. Not really but whatever.
-This was not supposed to have a third line but oh well.
-This was not supposed to have a fourth line but oh well.
-This was not supposed to have a fifth line but oh well.
-To to to to to to to to to to.
