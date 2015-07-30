@@ -51,7 +51,7 @@ class MarkovNode:
 		self.isEndOfSentence = isEnd
 	
 	def getRandomLinkedWord( self ):
-		return random.choice( list( self.links.keys() ) )
+		return random.choice( list( self.links.keys() ) ) #TODO: Use weighted randomness
 	
 	def hasLinks( self ):
 		return len( self.links ) > 0
@@ -69,17 +69,16 @@ previousWord = ""
 for line in lines:
 	if( len( line ) > 0 ):
 		for word in line:
-			isEnd = word.endswith( ( ".", "?", "!" ) )
-			if isEnd:
-				a = 0 #do nothing useful
-				#word = word.strip( "." )
+			isEnd = word.endswith( ( ".", "?", "!", '."', '?"', '!"' ) )
 		
 			if word not in nodes.keys():
 				nodes[ word ] = MarkovNode( isEnd )
 			if not previousWord == "":
-				numLinks = nodes[ previousWord ].addLink( word ) #nodes[ word ] )
 				if nodes[ previousWord ].isEndOfSentence:
 					sentenceStarts.append( word )
+				else:
+					numLinks = nodes[ previousWord ].addLink( word )
+				
 			else:
 				sentenceStarts.append( word )
 		
