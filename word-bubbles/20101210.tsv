@@ -1,0 +1,7 @@
+//The image is stored as images/20101210.png; this definition file is stored as definitions/20101210.csv
+E	M //List of speakers
+//Speaker	X	Y	X	Y
+E	37	6	180	69
+M	280	48	370	76
+//E	280	48	370	76 //If this comic had Eunice sharing a speech bubble with Mimi, we would uncomment this line.
+M	488	30	586	82	00 //The 00 will be ignored by this program version. Later versions of this program might use it.
