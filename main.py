@@ -26,6 +26,7 @@ outImageFileName = outImageFileNameDefault = "default out.png"
 numberOfComics = numberOfComicsDefault = 1
 saveForWeb = saveForWebDefault = False
 commentMark = commentMarkDefault = "//" #If in the future we decide to use a different mark for comments, this is the only line we'll need to change.
+commandLineFont = "" #If a font file is specified on the command line, this will be set.
 
 def findCharsPerLine( text, font, maxWidth ):
 	'''Find how many characters will fit within the specified width.
@@ -74,9 +75,10 @@ def usage():
 	print( "🞍 -n or --number: The number of comics to generate. Defaults to", numberOfComicsDefault )
 	print( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
 	print( "🞍 -h or --help: Display this usage info." )
+	print( "🞍 -f or --font: The path to a font file to use." )
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[1:], "swhi:o:p:n:", ["silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number="] )
+	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=" ] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
@@ -98,8 +100,11 @@ for option in options:
 	elif option[0] == "-h" or option[0] == "--help":
 		usage()
 		sys.exit( EX_OK )
+	elif option[0] == "-f" or option[0] == "--font":
+		commandLineFont = option[1]
 
 #Verify user input
+#commandLineFont is not verified here; it will be verified when loading the font.
 if not os.path.isdir( inDir ):
 	print( "Error:", inDir, "is not a directory.", file=sys.stderr )
 	exit( EX_NOINPUT )
@@ -168,11 +173,58 @@ for generatedComicNumber in range( numberOfComics ):
 		exit( EX_NOINPUT )
 
 	initialFontSize = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
+	
+	#try:
+	#	font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=initialFontSize )
+	#except IOError: #TODO: Don't immediately use the default font. If the font file in ./ doesn't work, use FreeType to find something similar.
+	#	print( error, "\nUsing default font instead.", file=sys.stderr )
+	#	font = ImageFont.load_default()
+	
+	fontLoaded = False
+	fontFile = ""
 	try:
-		font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=initialFontSize )
-	except IOError: #TODO: Don't immediately use the default font. If the font file in ./ doesn't work, use FreeType to find something similar.
-		print( error, "\nUsing default font instead.", file=sys.stderr )
-		font = ImageFont.load_default()
+		font = ImageFont.truetype( commandLineFont, size=initialFontSize )
+	except IOError:
+		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
+			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
+		fileList = os.listdir( "fonts" )
+		for testFile in fileList:
+			testFile = os.path.join( "fonts", testFile )
+			try:
+				font = ImageFont.truetype( testFile, size=initialFontSize )
+				fontLoaded = True
+				fontFile = testFile
+				break
+			except IOError:
+				pass
+		
+		families = [ "Nina", "Humor Sans", "Tomson Talks", "Comic Sans MS", "Ubuntu Titling" ]
+		for family in families:
+			if fontLoaded:
+				break
+			fontList = fontconfig.query( family=family )
+			for testFile in fileList:
+				try:
+					font = ImageFont.truetype( testFile, size=initialFontSize )
+					fontLoaded = True
+					fontFile = testFile
+					break
+				except IOError:
+					pass
+		
+		if not fontLoaded:
+			fontList = fontconfig.query()
+			for testFile in fileList:
+				try:
+					font = ImageFont.truetype( testFile, size=initialFontSize )
+					fontLoaded = True
+					fontFile = testFile
+					break
+				except IOError:
+					pass
+			if not fontLoaded:
+				#This should only be reachable if the system has absolutely no fonts
+				font = ImageFont.load_default()
 	
 	if numberOfComics > 1:
 		oldOutTextFileName = outTextFileName
@@ -226,7 +278,7 @@ for generatedComicNumber in range( numberOfComics ):
 				if offset > bottomRightY - topLeftY:
 					fontSize -= 1
 					try:
-						usedFont = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=fontSize )
+						usedFont = ImageFont.truetype( fontFile, size=fontSize )
 					except IOError as error:
 						print( error, "\nUsing default font instead.", file=sys.stderr )
 						usedFont = ImageFont.load_default()

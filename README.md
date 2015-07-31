@@ -12,8 +12,8 @@ For fun.
 * main.py: The Python script responsible for everything else
 * LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
 * README.md: This file
-* Nina fonts: A directory containing three variants of Nina Paley's handwriting-based TrueType font. These are not part of the Markov Comic Generator project; they are included so that you will have at least one comic-ish font.
-* Nina fonts/LICENSE AND ATTRIBUTION: License and attribution information for the Nina fonts.
+* fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font.
+* Nina fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
 * images: The directory in which input images should go. Contains one sample image.
 * transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
 * word-bubbles: The directory in which definition files should go. Contains one sample file.
@@ -86,3 +86,15 @@ If multiple characters use the same speech bubble (saying the same thing at the 
 	M	280	48	370	76
 	//E	280	48	370	76 //If this comic had Eunice sharing a speech bubble with Mimi, we would uncomment this line.
 	M	488	30	586	82	00 //The 00 will be ignored by this program version. Later versions of this program might use it.
+
+## Fonts
+The program will use the first usable font it finds, searching in the following order:
+
+1. A font file specified on the command line
+2. Font files in the "./fonts" directory
+3. [Nina](https://archive.org/details/NinaPaleyFonts)
+4. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
+5. [Tomson Talks](http://frabru.de/c.php/resource/font/TomsonTalks/)
+6. Comic Sans MS
+7. [Ubuntu Titling](http://www.fontsquirrel.com/fonts/Ubuntu-Titling)
+8. Any other font
