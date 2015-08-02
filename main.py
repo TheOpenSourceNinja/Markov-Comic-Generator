@@ -122,6 +122,8 @@ if not silence:
 	print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
 
 wordBubblesDir = os.path.join( inDir, "word-bubbles" )
+fontsDir = os.path.join( inDir, "fonts" )
+imageDir = os.path.join( inDir, "images" )
 
 for generatedComicNumber in range( numberOfComics ):
 
@@ -162,8 +164,7 @@ for generatedComicNumber in range( numberOfComics ):
 
 	if not silence:
 		print( comicID )
-
-	imageDir = os.path.join( inDir, "images" )
+	
 	inImageFileName = os.path.join( imageDir, comicID + ".png" )
 
 	try:
@@ -187,7 +188,7 @@ for generatedComicNumber in range( numberOfComics ):
 	except IOError:
 		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
 			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
-		fileList = os.listdir( "fonts" )
+		fileList = os.listdir( fontsDir )
 		for testFile in fileList:
 			testFile = os.path.join( "fonts", testFile )
 			try:
