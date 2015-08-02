@@ -185,6 +185,8 @@ for generatedComicNumber in range( numberOfComics ):
 	fontFile = ""
 	try:
 		font = ImageFont.truetype( commandLineFont, size=initialFontSize )
+		fontFile = commandLineFont
+		fontLoaded = True
 	except IOError:
 		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
 			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
@@ -192,6 +194,7 @@ for generatedComicNumber in range( numberOfComics ):
 		for testFile in fileList:
 			testFile = os.path.join( "fonts", testFile )
 			try:
+				print( "Trying to load font", testFile )
 				font = ImageFont.truetype( testFile, size=initialFontSize )
 				fontLoaded = True
 				fontFile = testFile
@@ -199,33 +202,34 @@ for generatedComicNumber in range( numberOfComics ):
 			except IOError:
 				pass
 		
-		families = [ "Nina", "Humor Sans", "Tomson Talks", "Comic Sans MS", "Ubuntu Titling" ]
-		for family in families:
-			if fontLoaded:
-				break
-			fontList = fontconfig.query( family=family )
-			for testFile in fileList:
-				try:
-					font = ImageFont.truetype( testFile, size=initialFontSize )
-					fontLoaded = True
-					fontFile = testFile
-					break
-				except IOError:
-					pass
-		
 		if not fontLoaded:
-			fontList = fontconfig.query()
-			for testFile in fileList:
-				try:
-					font = ImageFont.truetype( testFile, size=initialFontSize )
-					fontLoaded = True
-					fontFile = testFile
+			families = [ "Nina", "Humor Sans", "Tomson Talks", "Comic Sans MS", "Ubuntu Titling" ]
+			for family in families:
+				if fontLoaded:
 					break
-				except IOError:
-					pass
+				fontList = fontconfig.query( family=family )
+				for testFile in fileList:
+					try:
+						font = ImageFont.truetype( testFile, size=initialFontSize )
+						fontLoaded = True
+						fontFile = testFile
+						break
+					except IOError:
+						pass
+			
 			if not fontLoaded:
-				#This should only be reachable if the system has absolutely no fonts
-				font = ImageFont.load_default()
+				fontList = fontconfig.query()
+				for testFile in fileList:
+					try:
+						font = ImageFont.truetype( testFile, size=initialFontSize )
+						fontLoaded = True
+						fontFile = testFile
+						break
+					except IOError:
+						pass
+				if not fontLoaded:
+					#This should only be reachable if the system has absolutely no fonts
+					font = ImageFont.load_default()
 	
 	if numberOfComics > 1:
 		oldOutTextFileName = outTextFileName
