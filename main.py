@@ -85,7 +85,7 @@ except getopt.GetoptError as error:
 	sys.exit( EX_USAGE );
 
 for option in options:
-	if option[0] == "-s" or option[0] == "--silence":
+	if option[0] == "-s" or option[0] == "--silent":
 		silence = True
 	elif option[0] == "-i" or option[0] == "--indir":
 		inDir = option[1]
