@@ -1,0 +1,5 @@
+//Note: The first letter of each word should be bold. I chose not to put asterisks around the bold letters because the Markov Comic Generator software does not currently filter out asterisks in the middle of a word, only at the beginning and end of one.
+013
+L: FALSE EVIDENCE APPEARING REAL
+L: FUCK EVERYTHING AND RUN
+L: FORGETTING EVERYTHING'S ALL RIGHT
