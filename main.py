@@ -253,8 +253,13 @@ for generatedComicNumber in range( numberOfComics ):
 			line = line.split( "\t" )
 			character = line[0]
 			character = character.rstrip( ":" ).strip()
-		
-			generator = generators[ character ]
+			
+			try:
+				generator = generators[ character ]
+			except:
+				print( "Error: Word bubble file", wordBubbleFileName, "does not list", character, "in its list of speakers.", file=sys.stderr )
+				exit( EX_DATAERR )
+			
 			text = " ".join( generator.generateSentences( 1 ) )
 			print( character, ": ", text, sep="", file=outFile )
 			if not silence:
