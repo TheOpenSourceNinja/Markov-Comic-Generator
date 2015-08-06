@@ -122,6 +122,13 @@ if os.path.exists( outImageFileName ) and not os.path.isfile( outImageFileName )
 if numberOfComics < 1:
 	print( "Error: Number of comics (", numberOfComics, ") is less than 1.", file=sys.stderr )
 	exit( EX_USAGE )
+if topImageFileName != None:
+	if not os.path.exists( topImageFileName ):
+		print( "Error:", topImageFileName, "does not exist.", file=sys.stderr )
+		exit( EX_NOINPUT )
+	elif not os.path.isfile( topImageFileName ):
+		print( "Error:", topImageFileName, "is not a file.", file=sys.stderr )
+		exit( EX_NOINPUT )
 
 if not silence:
 	print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
@@ -337,18 +344,20 @@ for generatedComicNumber in range( numberOfComics ):
 		else:
 			infoToSave = PngInfo()
 			
+			encodingErrors = "backslashreplace" #If we encounter errors during text encoding, I feel it best to replace unencodable text with escape sequences; that way it may be possible for reader programs to recover the original unencodable text.
+			
 			#According to the Pillow documentation, key names should be "latin-1 encodable". I take this to mean that we ourselves don't need to encode it in latin-1.
 			key = "transcript"
-			keyUTF8 = key.encode( "utf-8" )
-			valueISO = transcript.encode( "iso-8859-1" )
-			valueUTF8 = transcript.encode( "utf-8" )
+			keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
+			valueISO = transcript.encode( "iso-8859-1", errors=encodingErrors )
+			valueUTF8 = transcript.encode( "utf-8", errors=encodingErrors )
 			
 			infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
 			infoToSave.add_text( key=key, value=valueISO )
 			
 			#GIMP only recognizes comments
 			key = "Comment"
-			keyUTF8 = key.encode( "utf-8" )
+			keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
 			
 			infoToSave.add_text( key=key, value=valueISO )
 			infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
