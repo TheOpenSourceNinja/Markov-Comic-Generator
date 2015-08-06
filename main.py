@@ -7,6 +7,7 @@ import os
 import fontconfig
 import textwrap
 from PIL import Image, ImageFont, ImageDraw, ImageColor
+from PIL.PngImagePlugin import PngInfo
 from generator import Generator
 
 #Exit statuses
@@ -27,6 +28,7 @@ numberOfComics = numberOfComicsDefault = 1
 saveForWeb = saveForWebDefault = False
 commentMark = commentMarkDefault = "//" #If in the future we decide to use a different mark for comments, this is the only line we'll need to change.
 commandLineFont = "" #If a font file is specified on the command line, this will be set.
+topImageFileName = None
 
 def findCharsPerLine( text, font, maxWidth ):
 	'''Find how many characters will fit within the specified width.
@@ -76,9 +78,10 @@ def usage():
 	print( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
 	print( "🞍 -h or --help: Display this usage info." )
 	print( "🞍 -f or --font: The path to a font file to use." )
+	print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=" ] )
+	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=" ] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
@@ -102,6 +105,8 @@ for option in options:
 		sys.exit( EX_OK )
 	elif option[0] == "-f" or option[0] == "--font":
 		commandLineFont = option[1]
+	elif option[0] == "-t" or option[0] == "--top":
+		topImageFileName = option[1]
 
 #Verify user input
 #commandLineFont is not verified here; it will be verified when loading the font.
@@ -231,21 +236,7 @@ for generatedComicNumber in range( numberOfComics ):
 					#This should only be reachable if the system has absolutely no fonts
 					font = ImageFont.load_default()
 	
-	if numberOfComics > 1:
-		oldOutTextFileName = outTextFileName
-		temp = os.path.splitext( outTextFileName )
-		outTextFileName = temp[0] + str( generatedComicNumber ) + temp[1]
-	
-	try:
-		outFile = open( file=outTextFileName, mode="wt" )
-	except OSError as error:
-		print( error, "\nUsing standard output instead", file=sys.stderr )
-		outFile = sys.stdout
-	
-	if numberOfComics > 1:
-		outTextFileName = oldOutTextFileName
-	
-	print( comicID, file=outFile )
+	transcript = str( comicID ) + "\n"
 	
 	for line in wordBubbleFile:
 		line = line.partition( commentMark )[0].strip()
@@ -261,7 +252,7 @@ for generatedComicNumber in range( numberOfComics ):
 				exit( EX_DATAERR )
 			
 			text = " ".join( generator.generateSentences( 1 ) )
-			print( character, ": ", text, sep="", file=outFile )
+			transcript += character + ": " + text + "\n" #print( character, ": ", text, sep="", file=outFile )
 			if not silence:
 				print( character, ": ", text, sep="" )
 		
@@ -315,6 +306,23 @@ for generatedComicNumber in range( numberOfComics ):
 			image.paste( wordBubble, box )
 		
 	wordBubbleFile.close()
+	
+	if numberOfComics > 1:
+		oldOutTextFileName = outTextFileName
+		temp = os.path.splitext( outTextFileName )
+		outTextFileName = temp[0] + str( generatedComicNumber ) + temp[1]
+	
+	try:
+		outFile = open( file=outTextFileName, mode="wt" )
+	except OSError as error:
+		print( error, "\nUsing standard output instead", file=sys.stderr )
+		outFile = sys.stdout
+	
+	if numberOfComics > 1:
+		outTextFileName = oldOutTextFileName
+	
+	print( transcript, file=outFile )
+	
 	outFile.close()
 	
 	if numberOfComics > 1:
@@ -327,7 +335,25 @@ for generatedComicNumber in range( numberOfComics ):
 			image = image.convert( mode = "P", palette="WEB" )
 			image.save( outImageFileName, format="PNG", optimize=True )
 		else:
-			image.save( outImageFileName, format="PNG" )
+			infoToSave = PngInfo()
+			
+			#According to the Pillow documentation, key names should be "latin-1 encodable". I take this to mean that we ourselves don't need to encode it in latin-1.
+			key = "transcript"
+			keyUTF8 = key.encode( "utf-8" )
+			valueISO = transcript.encode( "iso-8859-1" )
+			valueUTF8 = transcript.encode( "utf-8" )
+			
+			infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
+			infoToSave.add_text( key=key, value=valueISO )
+			
+			#GIMP only recognizes comments
+			key = "Comment"
+			keyUTF8 = key.encode( "utf-8" )
+			
+			infoToSave.add_text( key=key, value=valueISO )
+			infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
+			
+			image.save( outImageFileName, format="PNG", pnginfo=infoToSave )
 	except IOError as error:
 		print( error, file=sys.stderr )
 		exit( EX_CANTCREAT )
