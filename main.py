@@ -39,19 +39,30 @@ def findCharsPerLine( text, font, maxWidth ):
 		Returns:
 			An integer indicating how many characters fit within maxWidth.
 	'''
+	
+	if maxWidth < 1:
+		maxWidth = 1
+	
 	charsPerLine = maxWidth // font.getsize( "L" )[0]
+	
+	if charsPerLine < 1:
+		charsPerLine = 1
 	
 	while font.getsize( text[ :charsPerLine ] )[0] > maxWidth:
 		charsPerLine -= 1
 	
+	if charsPerLine < 1:
+		charsPerLine = 1
+	
 	return charsPerLine
 
-def rewrap( text, font, maxWidth ):
+def rewrap( text, font, maxWidth, center=True ):
 	'''Rewrap and center text.
 		Args:
 			text: A string containing the text to be wrapped.
 			font: Gets passed to findCharsPerLine().
 			maxWidth: Gets passed to findCharsPerLine().
+			center: A Boolean indicating whether text should be centered after wrapping. Spaces will be added around each line of text if true. Defaults to True.
 		Returns:
 			A list of strings.
 	'''
@@ -60,7 +71,8 @@ def rewrap( text, font, maxWidth ):
 	
 	result = []
 	for line in temp:
-		line = line.center( charsPerLine )
+		if center:
+			line = line.strip().center( charsPerLine )
 		result.append( line )
 	
 	return result
@@ -187,12 +199,6 @@ for generatedComicNumber in range( numberOfComics ):
 
 	initialFontSize = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
 	
-	#try:
-	#	font = ImageFont.truetype( "Nina fonts/NinaMedium.ttf", size=initialFontSize )
-	#except IOError: #TODO: Don't immediately use the default font. If the font file in ./ doesn't work, use FreeType to find something similar.
-	#	print( error, "\nUsing default font instead.", file=sys.stderr )
-	#	font = ImageFont.load_default()
-	
 	fontLoaded = False
 	fontFile = ""
 	try:
@@ -271,9 +277,13 @@ for generatedComicNumber in range( numberOfComics ):
 			box = ( topLeftX, topLeftY, bottomRightX, bottomRightY )
 			wordBubble = image.crop( box )
 			draw = ImageDraw.Draw( wordBubble )
-		
-			newText = rewrap( text, font, bottomRightX - topLeftX )
-		
+			
+			width = bottomRightX - topLeftX
+			if width <= 0: #Width must be positive
+				width = 1
+			
+			newText = rewrap( text, font, width )
+			
 			margin = 0
 			offset = originalOffset = 0
 			fontSize = initialFontSize
