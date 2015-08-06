@@ -337,6 +337,20 @@ for generatedComicNumber in range( numberOfComics ):
 		temp = os.path.splitext( outImageFileName )
 		outImageFileName = temp[0] + str( generatedComicNumber ) + temp[1]
 	
+	if topImageFileName != None:
+		try:
+			topImage = Image.open( topImageFileName ).convert( mode=image.mode )
+		except IOError as error:
+			print( error, file=sys.stderr )
+			exit( EX_NOINPUT )
+		oldSize = topImage.size
+		size = ( max( topImage.size[0], image.size[0] ), topImage.size[1] + image.size[1] )
+		
+		newImage = Image.new( mode=image.mode, size=size )
+		newImage.paste( im=topImage, box=( 0, 0 ) )
+		newImage.paste( im=image, box=( 0, oldSize[1] ) )
+		image = newImage
+	
 	try:
 		if saveForWeb:
 			image = image.convert( mode = "P", palette="WEB" )
