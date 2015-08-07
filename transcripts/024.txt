@@ -1,0 +1,6 @@
+024
+M: MY GLASS IS HALF *EMPTY.*
+E: IT'S HALF *FULL!*
+SFX: GLUG GLUG GLUG! //Note: Wasn't sure whether to note this as SFX or Eunice's dialog. Decided SFX would give funnier results in Markov Comic Generator.
+M: NOW IT'S 99.9% EMPTY.
+E: IT'S 0.1% *FULL!*

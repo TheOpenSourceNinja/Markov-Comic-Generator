@@ -1,0 +1,5 @@
+021
+E: *ART* IS LIKE *POOP...*
+SFX: SPROUT!
+E: IT MAKES GREAT *FERTILIZER!*
+//L: ART IS LIKE POOP by MIMI //Commenting this line out because my Markov Comic Generator software would not know to generate the same book title for each frame
