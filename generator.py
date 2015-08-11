@@ -92,21 +92,22 @@ class Generator:
 						word = word.strip("*/") #Remove emphasis
 						word = word.strip() #Remove whitespace
 						if len( word ) > 0:
-							isEnd = word.endswith( ( ".", "?", "!", '."', '?"', '!"' ) ) or word == line[-1]
-		
+							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
+			
 							if word not in self.nodes.keys():
 								self.nodes[ word ] = self.MarkovNode( isEnd )
 							if not previousWord == "":
-								if self.nodes[ previousWord ].isEndOfSentence:
+								if self.nodes[ previousWord ].isEndOfSentence and ( word not in self.sentenceStarts ):
 									self.sentenceStarts.append( word )
 								else:
-									numLinks = self.nodes[ previousWord ].addLink( word )
+									self.nodes[ previousWord ].addLink( word )
 				
 							else:
-								self.sentenceStarts.append( word )
-		
+								if word not in self.sentenceStarts:
+									self.sentenceStarts.append( word )
+			
 							previousWord = word
-
+			
 	def generateSentences(self, numberOfSentences = 1):
 		'''Generate some number of sentences (paths through the Markov graph).
 			Args:
