@@ -89,7 +89,7 @@ class Generator:
 			for line in self.lines:
 				if( len( line ) > 0 ):
 					for word in line:
-						word = word.strip("*/") #Remove emphasis
+						word = word.strip("*/_") #Remove emphasis
 						word = word.strip() #Remove whitespace
 						if len( word ) > 0:
 							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
