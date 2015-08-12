@@ -6,7 +6,7 @@ import random
 import os
 import fontconfig
 import textwrap
-from PIL import Image, ImageFont, ImageDraw, ImageColor
+from PIL import Image, ImageFont, ImageDraw, ImageColor, ImageStat
 from PIL.PngImagePlugin import PngInfo
 from generator import Generator
 
@@ -304,12 +304,32 @@ for generatedComicNumber in range( numberOfComics ):
 				else:
 					goodSizeFound = True
 		
-			midX = int( wordBubble.size[0] / 2 )
-			midY = int( wordBubble.size[1] / 2 )
+			midX = int( wordBubble.size[ 0 ] / 2 )
+			midY = int( wordBubble.size[ 1 ] / 2 )
 		
 			try: #Choose a text color that will be visible against the background
-				backgroundColor = wordBubble.getpixel( ( midX, midY ) )
-				textColor = ( 255-backgroundColor[0], 255-backgroundColor[1], 255-backgroundColor[2], 255 )
+				backgroundColor = ImageStat.Stat( wordBubble ).mean #wordBubble.getpixel( ( midX, midY ) )
+				textColorList = []
+				
+				if wordBubble.mode.startswith( "1" ):
+					bandMax = 1
+				elif wordBubble.mode.startswith( "L" ) or wordBubble.mode.startswith( "P" ) or wordBubble.mode.startswith( "RGB" ) or wordBubble.mode.startswith( "CMYK" ) or wordBubble.mode.startswith( "YCbCr" ) or wordBubble.mode.startswith( "LAB" ) or wordBubble.mode.startswith( "HSV" ):
+					bandMax = 255
+				elif wordBubble.mode.startswith( "I" ):
+					bandMax = 2147483647 #max for a 32-bit signed integer
+				elif wordBubble.mode.startswith( "F" ):
+					bandMax = float( infinity )
+				else: #I've added all modes currently supported according to Pillow documentation; this is for future compatibility
+					bandMax = max( ImageStat.Stat( wordBubble ).extrema )
+				
+				for c in backgroundColor:
+					textColorList.append( int( bandMax - c ) )
+				
+				if wordBubble.mode.endswith( "A" ): #Pillow supports two modes with alpha channels
+					textColorList[ -1 ] = bandMax
+				
+				textColor = tuple( textColorList )
+				
 			except ValueError:
 				textColor = "black"
 			

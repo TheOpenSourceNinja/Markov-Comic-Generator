@@ -55,3 +55,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Program outputs
+default out.png
+default out.txt
