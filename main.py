@@ -381,31 +381,31 @@ for generatedComicNumber in range( numberOfComics ):
 		newImage.paste( im=image, box=( 0, oldSize[1] ) )
 		image = newImage
 	
+	infoToSave = PngInfo()
+	
+	encodingErrors = "backslashreplace" #If we encounter errors during text encoding, I feel it best to replace unencodable text with escape sequences; that way it may be possible for reader programs to recover the original unencodable text.
+	
+	#According to the Pillow documentation, key names should be "latin-1 encodable". I take this to mean that we ourselves don't need to encode it in latin-1.
+	key = "transcript"
+	keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
+	valueISO = transcript.encode( "iso-8859-1", errors=encodingErrors )
+	valueUTF8 = transcript.encode( "utf-8", errors=encodingErrors )
+	
+	infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
+	infoToSave.add_text( key=key, value=valueISO )
+	
+	#GIMP only recognizes comments
+	key = "Comment"
+	keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
+	
+	infoToSave.add_text( key=key, value=valueISO )
+	infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
+	
 	try:
 		if saveForWeb:
-			image = image.convert( mode = "P", palette="WEB" )
-			image.save( outImageFileName, format="PNG", optimize=True )
+			image = image.convert( mode = "P", palette="WEB", dither=False ) #"ADAPTIVE" palette might look better for some images. Also try turning dithering on or off.
+			image.save( outImageFileName, format="PNG", optimize=True, pnginfo=infoToSave )
 		else:
-			infoToSave = PngInfo()
-			
-			encodingErrors = "backslashreplace" #If we encounter errors during text encoding, I feel it best to replace unencodable text with escape sequences; that way it may be possible for reader programs to recover the original unencodable text.
-			
-			#According to the Pillow documentation, key names should be "latin-1 encodable". I take this to mean that we ourselves don't need to encode it in latin-1.
-			key = "transcript"
-			keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
-			valueISO = transcript.encode( "iso-8859-1", errors=encodingErrors )
-			valueUTF8 = transcript.encode( "utf-8", errors=encodingErrors )
-			
-			infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
-			infoToSave.add_text( key=key, value=valueISO )
-			
-			#GIMP only recognizes comments
-			key = "Comment"
-			keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
-			
-			infoToSave.add_text( key=key, value=valueISO )
-			infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
-			
 			image.save( outImageFileName, format="PNG", pnginfo=infoToSave )
 	except IOError as error:
 		print( error, file=sys.stderr )
