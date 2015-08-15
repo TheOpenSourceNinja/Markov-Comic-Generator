@@ -291,6 +291,9 @@ for generatedComicNumber in range( numberOfComics ):
 			width = bottomRightX - topLeftX
 			if width <= 0: #Width must be positive
 				width = 1
+			height = bottomRightY - topLeftY
+			if height <= 0:
+				height = 1
 			
 			newText = rewrap( text, font, width )
 			
@@ -303,16 +306,24 @@ for generatedComicNumber in range( numberOfComics ):
 				offset = originalOffset
 				for line in newText:
 					offset += usedFont.getsize( line )[1]
-				if offset > bottomRightY - topLeftY:
+				if offset > height:
+					goodSizeFound = False
+				else:
+					goodSizeFound = True
+					for newTextLine in newText:
+						print( "newTextLine", newTextLine )
+						if usedFont.getsize( newTextLine )[ 0 ] > width:
+							print( usedFont.getsize( newTextLine )[ 0 ], ">", width )
+							goodSizeFound = False
+							break
+				if not goodSizeFound:
 					fontSize -= 1
 					try:
 						usedFont = ImageFont.truetype( fontFile, size=fontSize )
 					except IOError as error:
 						print( error, "\nUsing default font instead.", file=sys.stderr )
 						usedFont = ImageFont.load_default()
-					newText = rewrap( text, usedFont, bottomRightX - topLeftX )
-				else:
-					goodSizeFound = True
+					newText = rewrap( text, usedFont, width )
 		
 			midX = int( wordBubble.size[ 0 ] / 2 )
 			midY = int( wordBubble.size[ 1 ] / 2 )
