@@ -73,7 +73,7 @@ def rewrap( text, font, maxWidth, center=True ):
 	result = []
 	for line in temp:
 		if len( line ) > charsPerLine:
-			hyp = Hyphenator()
+			hyp = Hypenator()
 			hyphenationResult = []
 			
 			stillGoing = True
