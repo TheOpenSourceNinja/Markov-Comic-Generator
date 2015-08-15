@@ -222,7 +222,8 @@ for generatedComicNumber in range( numberOfComics ):
 		for testFile in fileList:
 			testFile = os.path.join( "fonts", testFile )
 			try:
-				print( "Trying to load font", testFile )
+				if not silence:
+					print( "Trying to load font", testFile )
 				font = ImageFont.truetype( testFile, size=initialFontSize )
 				fontLoaded = True
 				fontFile = testFile
@@ -311,9 +312,7 @@ for generatedComicNumber in range( numberOfComics ):
 				else:
 					goodSizeFound = True
 					for newTextLine in newText:
-						print( "newTextLine", newTextLine )
 						if usedFont.getsize( newTextLine )[ 0 ] > width:
-							print( usedFont.getsize( newTextLine )[ 0 ], ">", width )
 							goodSizeFound = False
 							break
 				if not goodSizeFound:
