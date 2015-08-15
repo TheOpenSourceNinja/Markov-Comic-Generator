@@ -67,13 +67,23 @@ def rewrap( text, font, maxWidth, center=True ):
 			A list of strings.
 	'''
 	charsPerLine = findCharsPerLine( text, font, maxWidth )
-	temp = textwrap.wrap( text, width = charsPerLine )
+	temp = textwrap.wrap( text, width = charsPerLine, break_long_words = False )
 	
 	result = []
 	for line in temp:
-		if center:
-			line = line.strip().center( charsPerLine )
-		result.append( line )
+		if len( line ) > charsPerLine:
+			middle = len( line ) // 2
+			firstHalf = line[ :middle ] + "-"
+			secondHalf = line[ middle: ]
+			if center:
+				firstHalf = firstHalf.center( charsPerLine )
+				secondHalf = secondHalf.center( charsPerLine )
+			result.append( firstHalf )
+			result.append( secondHalf )
+		else:
+			if center:
+				line = line.center( charsPerLine )
+			result.append( line )
 	
 	return result
 
