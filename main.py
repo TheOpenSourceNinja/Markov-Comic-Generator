@@ -72,9 +72,15 @@ def rewrap( text, font, maxWidth, center=True ):
 	result = []
 	for line in temp:
 		if len( line ) > charsPerLine:
-			middle = len( line ) // 2
-			firstHalf = line[ :middle ] + "-"
-			secondHalf = line[ middle: ]
+			if "-" in line :
+				#Split on hyphens if there are any...
+				splitted = line.split( "-", maxsplit = 1 )
+				firstHalf = splitted[ 0 ] + "-"
+				secondHalf = splitted[ 1 ]
+			else:
+				middle = len( line ) // 2
+				firstHalf = line[ :middle ] + "-"
+				secondHalf = line[ middle: ]
 			if center:
 				firstHalf = firstHalf.center( charsPerLine )
 				secondHalf = secondHalf.center( charsPerLine )
