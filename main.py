@@ -9,6 +9,7 @@ import textwrap
 from PIL import Image, ImageFont, ImageDraw, ImageColor, ImageStat
 from PIL.PngImagePlugin import PngInfo
 from generator import Generator
+from hyphen import Hyphenator
 
 #Exit statuses
 #These are copied from my /usr/include/sysexits.h. Only statuses possibly relevant to this program were copied.
@@ -67,13 +68,33 @@ def rewrap( text, font, maxWidth, center=True ):
 			A list of strings.
 	'''
 	charsPerLine = findCharsPerLine( text, font, maxWidth )
-	temp = textwrap.wrap( text, width = charsPerLine )
+	temp = textwrap.wrap( text, width = charsPerLine, break_long_words = False )
 	
 	result = []
 	for line in temp:
-		if center:
-			line = line.strip().center( charsPerLine )
-		result.append( line )
+		if len( line ) > charsPerLine:
+			hyp = Hypenator()
+			hyphenationResult = []
+			
+			stillGoing = True
+			while stillGoing:
+				temp = hyp.wrap( line, width = charsPerLine )
+				hyphenationResult.append( temp[ 0 ] )
+				if len( temp[ 1 ] ) > charsPerLine:
+					line = temp[ 1 ]
+					stillGoing = True
+				else:
+					stillGoing = False
+					hyphenationResult.append( temp[ 1 ] )
+			
+			for newLine in hyphenationResult:
+				if center:
+					newLine = newLine.strip().center( charsPerLine )
+				result.append( newLine )
+		else:
+			if center:
+				line = line.strip().center( charsPerLine )
+			result.append( line )
 	
 	return result
 
