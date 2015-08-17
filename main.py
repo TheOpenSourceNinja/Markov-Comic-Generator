@@ -74,7 +74,7 @@ def rewrap( text, font, maxWidth, center=True ):
 		if len( line ) > charsPerLine:
 			if "-" in line :
 				#Split on hyphens if there are any...
-				splitted = line.split( "-", maxsplit = 1 )
+				splitted = line.split( "-", 1 )
 				firstHalf = splitted[ 0 ] + "-"
 				secondHalf = splitted[ 1 ]
 			else:
