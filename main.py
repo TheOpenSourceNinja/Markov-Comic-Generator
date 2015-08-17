@@ -197,7 +197,7 @@ for generatedComicNumber in range( numberOfComics ):
 		if len( line ) > 0:
 			line = line.partition( commentMark )[0].strip()
 			if len( line ) > 0:
-				speakers = line.split( "\t" )
+				speakers = line.upper().split( "\t" )
 				if len( speakers ) > 0:
 					lookForSpeakers = False
 		else:
@@ -286,8 +286,7 @@ for generatedComicNumber in range( numberOfComics ):
 		line = line.partition( commentMark )[0].strip()
 		if len( line ) > 0:
 			line = line.split( "\t" )
-			character = line[0]
-			character = character.rstrip( ":" ).strip()
+			character = line[ 0 ].rstrip( ":" ).strip().upper()
 			
 			try:
 				generator = generators[ character ]
