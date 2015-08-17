@@ -12,7 +12,7 @@ For fun.
 * main.py: The Python script responsible for everything else
 * LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
 * README.md: This file
-* fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font.
+* fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font. Some other fonts are linked to in the Fonts section below.
 * Nina fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
 * images: The directory in which input images should go. Contains one sample image.
 * transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
@@ -94,7 +94,8 @@ The program will use the first usable font it finds, searching in the following 
 1. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
 1. [Tomson Talks](http://purl.org/net/2008,frankbruder/font/TomsonTalks)
 1. [Nibby](http://www.abstractfonts.com/font/15016)
-1. [Vipond Comic](http://wat.midco.net/jvipond/miscellany/comicfont.html)
+1. [Vipond Comic LC](http://wat.midco.net/jvipond/miscellany/comicfont.html)
+1. [Vipond Comic UC](http://wat.midco.net/jvipond/miscellany/comicfont.html)
 1. [Comic Neue](http://comicneue.com/)
 1. [Comic Relief](http://loudifier.com/comic-relief/)
 1. [Dekko](https://github.com/EbenSorkin/Dekko)

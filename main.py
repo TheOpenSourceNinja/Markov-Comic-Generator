@@ -28,7 +28,7 @@ outImageFileName = outImageFileNameDefault = "default out.png"
 numberOfComics = numberOfComicsDefault = 1
 saveForWeb = saveForWebDefault = False
 commentMark = commentMarkDefault = "//" #If in the future we decide to use a different mark for comments, this is the only line we'll need to change.
-commandLineFont = "" #If a font file is specified on the command line, this will be set.
+commandLineFont = None #If a font file is specified on the command line, this will be set.
 topImageFileName = None
 
 def findCharsPerLine( text, font, maxWidth ):
@@ -93,6 +93,87 @@ def rewrap( text, font, maxWidth, center=True ):
 			result.append( line )
 	
 	return result
+
+def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None ):
+	fontLoaded = False
+	fontFile = None
+	
+	if not silence:
+		print( "fontsDir is", fontsDir, "and commandLineFont is", commandLineFont )
+	
+	if commandLineFont is None:
+		commandLineFont = ""
+	
+	try:
+		if not silence:
+			print( "Trying to load font from file", commandLineFont )
+		font = ImageFont.truetype( commandLineFont, size=size )
+		fontFile = commandLineFont
+		fontLoaded = True
+	except ( IOError, OSError ):
+		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
+			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
+		fileList = os.listdir( fontsDir )
+		for testFileName in fileList:
+			testFileName = os.path.join( fontsDir, testFileName )
+			if not silence:
+				print( "Trying to load font from file", testFileName )
+			try:
+				testFile = fontconfig.FcFont( testFileName )
+				if not silence:
+					print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+				if charToCheck == None or testFile.has_char( charToCheck ):
+					font = ImageFont.truetype( testFile.file, size=size )
+					fontLoaded = True
+					fontFile = testFile.file
+					break
+			except ( IOError, OSError ):
+				pass
+		
+		if not fontLoaded:
+			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ]
+			for family in families:
+				if fontLoaded:
+					break
+				fontList = fontconfig.query( family=family )
+				for testFileName in fontList:
+					if fontLoaded:
+						break
+					testFile = fontconfig.FcFont( testFileName )
+					try:
+						if not silence:
+							print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+						if charToCheck == None or testFile.has_char( charToCheck ):
+							font = ImageFont.truetype( testFile.file, size=size )
+							fontLoaded = True
+							fontFile = testFile.file
+							break
+					except ( IOError, OSError ):
+						pass
+			if not fontLoaded:
+				fontList = fontconfig.query() #Gets a list of all fonts
+				for testFileName in fontList:
+					if fontLoaded:
+						break
+					testFile = fontconfig.FcFont( testFileName )
+					try:
+						if not silence:
+							print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+						if charToCheck == None or testFile.has_char( charToCheck ):
+							font = ImageFont.truetype( testFile.file, size=size )
+							fontLoaded = True
+							fontFile = testFile.file
+							break
+					except ( IOError, OSError ):
+						pass
+				if not fontLoaded:
+					#This should only be reachable if the system has absolutely no fonts
+					if not silence:
+						print( "No usable fonts found. Using default font." )
+					font = ImageFont.load_default()
+					fontFile = None
+	print( "fontFile:", fontFile )
+	return fontFile
 
 def usage():
 	'''Print command line usage info.
@@ -166,6 +247,8 @@ wordBubblesDir = os.path.join( inDir, "word-bubbles" )
 fontsDir = os.path.join( inDir, "fonts" )
 imageDir = os.path.join( inDir, "images" )
 
+fontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont )
+
 for generatedComicNumber in range( numberOfComics ):
 
 	try:
@@ -227,63 +310,14 @@ for generatedComicNumber in range( numberOfComics ):
 		print( error, file=sys.stderr )
 		exit( EX_NOINPUT )
 
-	initialFontSize = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
+	size = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
 	
-	fontLoaded = False
-	fontFile = ""
-	try:
-		font = ImageFont.truetype( commandLineFont, size=initialFontSize )
-		fontFile = commandLineFont
-		fontLoaded = True
-	except IOError:
-		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
-			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
-		fileList = os.listdir( fontsDir )
-		for testFile in fileList:
-			testFile = os.path.join( "fonts", testFile )
-			try:
-				if not silence:
-					print( "Trying to load font", testFile )
-				font = ImageFont.truetype( testFile, size=initialFontSize )
-				fontLoaded = True
-				fontFile = testFile
-				break
-			except IOError:
-				pass
-		
-		if not fontLoaded:
-			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ]
-			for family in families:
-				if fontLoaded:
-					break
-				fontList = fontconfig.query( family=family )
-				for testFile in fileList:
-					try:
-						font = ImageFont.truetype( testFile, size=initialFontSize )
-						fontLoaded = True
-						fontFile = testFile
-						break
-					except IOError:
-						pass
-			
-			if not fontLoaded:
-				fontList = fontconfig.query()
-				for testFile in fileList:
-					try:
-						font = ImageFont.truetype( testFile, size=initialFontSize )
-						fontLoaded = True
-						fontFile = testFile
-						break
-					except IOError:
-						pass
-				if not fontLoaded:
-					#This should only be reachable if the system has absolutely no fonts
-					font = ImageFont.load_default()
+	font = ImageFont.truetype( fontFile, size = size )
 	
 	transcript = str( comicID ) + "\n"
 	
 	for line in wordBubbleFile:
-		line = line.partition( commentMark )[0].strip()
+		line = line.partition( commentMark )[ 0 ].strip()
 		if len( line ) > 0:
 			line = line.split( "\t" )
 			character = line[ 0 ].rstrip( ":" ).strip().upper()
@@ -299,10 +333,10 @@ for generatedComicNumber in range( numberOfComics ):
 			if not silence:
 				print( character, ": ", text, sep="" )
 		
-			topLeftX = int( line[1] )
-			topLeftY = int( line[2] )
-			bottomRightX = int( line[3] )
-			bottomRightY = int( line[4] )
+			topLeftX = int( line[ 1 ] )
+			topLeftY = int( line[ 2 ] )
+			bottomRightX = int( line[ 3 ] )
+			bottomRightY = int( line[ 4 ] )
 		
 			box = ( topLeftX, topLeftY, bottomRightX, bottomRightY )
 			wordBubble = image.crop( box )
@@ -319,7 +353,7 @@ for generatedComicNumber in range( numberOfComics ):
 			
 			margin = 0
 			offset = originalOffset = 0
-			fontSize = initialFontSize
+			fontSize = size
 			goodSizeFound = False
 			usedFont = font
 			while not goodSizeFound:
