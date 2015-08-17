@@ -12,7 +12,7 @@ For fun.
 * main.py: The Python script responsible for everything else
 * LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
 * README.md: This file
-* fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font.
+* fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font.
 * Nina fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
 * images: The directory in which input images should go. Contains one sample image.
 * transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
@@ -37,9 +37,7 @@ Labels are not case-sensitive.
 
 All input files are either images (any common format is acceptable; PNG format is recommended) or text files. It is recommended that text files be encoded in UTF-8 and have Windows-style CR+LF newlines.
 
-### Dialog & sound effects transcript files
-This format is a based on the one described [here](http://www.joshmillard.com/2015/07/06/wanna-help-edit-calvin-and-hobbes-transcripts/).
-
+### Dialog transcript files
 These transcript files should be in the transcripts/ folder. A transcript file's name should be its ID number followed by the ".txt" file extension.
 
 All the lines after the ID represent dialog or sound effects. These lines take the form of a character label, a colon, a space, and then whatever dialog the character speaks.
@@ -48,31 +46,31 @@ Different panels or balloons go on different lines. This just makes for a cleane
 
 In the case of shared dialog (e.g. two or more characters say the same thing at the same time), a separate copy of the dialog should be given to each character on two consecutive lines.
 
-This program ignores emphasis. However, it is recommended for the purpose of accurate transcription that emphasis be added to words in the following ways:
+This program will strip asterisks, forward slashes, and underscores from around individual words. However, it is recommended for the purpose of accurate transcription that emphasis be added to words in the following ways:
 
 * \*asterisks\* surrounding a word represent bold text
-* /slashes/ surrounding a word represent italic text
+* /forward slashes/ surrounding a word represent italic text
+* \_underscores\_ surrounding a word represent underlined text.
 
 Word capitalization should be as it is in the original comic strip.
+
+If in the original comic, a word is hyphenated in order to split it between two lines of text, it is recommended that the word be kept on a single line in the transcript and the hyphen be replaced with a [soft hyphen](https://en.wikipedia.org/w/index.php?title=Soft_hyphen&oldid=625641896) (Unicode code point U+00AD). Soft hyphens are not normally visible in most text editors; they are used to mark a place where a visible hyphen can be automatically inserted if one is needed.
 
 #### Example
 	//This first line will be blank after the comment gets removed, so it is ignored.
 	20101210 //Date serves as ID number
-	E: WOULD YOU RATHER BE *RIGHT,* OR *HAPPY?* //Eunice is talking
+	E: WOULD YOU RATHER BE *RIGHT,* OR *HAP­PY?* //Eunice is talking. Also, the last word has a soft hyphen in the middle.
 	M: *NEITHER!*
 	//E: *NEITHER!* //If Mimi and Eunice both said this at the same time, we would uncomment this line.
 	M: I'D RATHER BE *RICH!* //Note: For some reason Mimi and Eunice speak in all caps. See for yourself: http://mimiandeunice.com/2010/12/10/right-or-happy-iii/
 
-### Strips (The Visual Stuff)
-Each strip consists of an image file and a corresponding definition file.
+### Image files
+Each image file should be in the images/ folder. Its name should be its ID number followed by an extension appropriate for the format. The image should have all dialog blanked out so that empty word balloons are left.
 
-The image file should be in the images/ folder. Its name should be its ID number followed by an extension appropriate for the format. The image should have all dialog blanked out so that empty word balloons are left.
+### Word bubble files
+Each word bubble file should be in the word-bubbles/ folder. Its name should consist of its ID number followed by ".tsv".
 
-The definition file format is based on but not compatible with the one described [here](http://www.joshmillard.com/2015/07/06/calvin-and-markov/).
-
-The definition file should be in the word-bubbles/ folder. Its name should consist of its ID number followed by ".tsv".
-
-The first non-blank line of the definition file should be a tab-separated list of labels of all the characters who speak.
+The first non-blank line of each file should be a tab-separated list of labels of all the characters who speak.
 
 All following lines should take the form of one character label, a tab, the X coordinate of the top left corner of the word balloon, a tab, the Y coordinate of the top left corner, a tab, the X coordinate of the bottom right corner, a tab, and the Y coordinate of the bottom right corner. As this format may change depending on the needs of the program, to maintain compatibility between program versions, any data following this will be ignored. All coordinates are integers representing pixel coordinates in the image, with (0,0) being the top left corner.
 
