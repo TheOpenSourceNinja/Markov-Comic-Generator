@@ -9,6 +9,7 @@ import textwrap
 from PIL import Image, ImageFont, ImageDraw, ImageColor, ImageStat
 from PIL.PngImagePlugin import PngInfo
 from generator import Generator
+from idchecker import idChecker
 
 #Exit statuses
 #These are copied from my /usr/include/sysexits.h. Only statuses possibly relevant to this program were copied.
@@ -99,7 +100,7 @@ def usage():
 	print( "😕" ) #In case of transcoding errors: this should be U+1F615, "confused face"
 	print( "Usage: The program takes the following command line arguments:" )
 	print( "🞍 -s or --silent: Prevents output on standard out. Defaults to", silenceDefault ) #the first character of each of these should be U+1F78D, "black slightly small square"
-	print( "🞍 -i or --indir: The directory in which to look for inputs (must have images/, transcripts/, and word-bubbles/ subdirectories). Defaults to", inDirDefault )
+	print( "🞍 -i or --indir: The directory in which to look for inputs (must have fonts/, images/, transcripts/, and word-bubbles/ subdirectories). Defaults to", inDirDefault )
 	print( "🞍 -o or --outtextfile: The name of a text file to save the resulting sentences to. Defaults to", outTextFileNameDefault )
 	print( "🞍 -p or --outimagefile: The name of an image file to save the resulting comic to. Numbers will be appended if multiple comics are generated. Defaults to", outImageFileNameDefault )
 	print( "🞍 -n or --number: The number of comics to generate. Defaults to", numberOfComicsDefault )
@@ -183,16 +184,29 @@ for generatedComicNumber in range( numberOfComics ):
 	except OSError as erro:
 		print( error, file=sys.stderr )
 		exit( EX_NOINPUT )
-
+	
+	idChecker = idChecker()
+	if not idChecker.checkFile( wordBubbleFile, wordBubbleFileName, commentMark ):
+		print( "Error: Word bubble file", wordBubbleFileName, "is not in the correct format." )
+		exit( EX_DATAERR )
+	
 	lookForSpeakers = True
+	speakers = []
 	while lookForSpeakers:
 		line = wordBubbleFile.readline()
-		line = line.partition( commentMark )[0].strip()
 		if len( line ) > 0:
-			speakers = line.split( "\t" )
-			if len( speakers ) > 0:
-				lookForSpeakers = False
-
+			line = line.partition( commentMark )[0].strip()
+			if len( line ) > 0:
+				speakers = line.split( "\t" )
+				if len( speakers ) > 0:
+					lookForSpeakers = False
+		else:
+			lookForSpeakers = False; #End of file reached, no speakers found
+	
+	if len( speakers ) == 0:
+		print( "Error: Word bubble file", wordBubbleFileName, "contains no speakers." )
+		exit( EX_DATAERR )
+	
 	if not silence:
 		print( "These characters speak:", speakers )
 

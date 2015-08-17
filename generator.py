@@ -3,6 +3,7 @@
 import random
 import os
 import sys
+from idchecker import idChecker
 
 class Generator:
 	class MarkovNode:
@@ -56,19 +57,9 @@ class Generator:
 		for inFileName in os.listdir( transcriptDir ):
 			inFileName = os.path.join( transcriptDir, inFileName )
 			inFile = open( file=inFileName, mode="rt" )
-		
-			keepLookingForHeader = True
-			headerFound = False
-		
-			while keepLookingForHeader:
-				line = inFile.readline().partition( self.commentMark )[0].strip()
-				if line.isnumeric() and line == os.path.splitext( os.path.basename( inFileName ) )[0]: #Why enforce the file name requirement? It's about people, not code: it's to make sure transcribers have read all available documentation (README.md) about the transcription format.
-					keepLookingForHeader = False
-					headerFound = True
-				elif len(line) > 0:
-					keepLookingForHeader = False
 			
-			if not headerFound:
+			idc = idChecker()
+			if not idc.checkFile( inFile, inFileName, self.commentMark ):
 				print( "Error: File", inFileName, "is not a properly formatted transcript.", file=sys.stderr )
 				break;
 		

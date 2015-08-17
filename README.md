@@ -26,6 +26,8 @@ Blank lines - either lines that are actually blank or that become blank after re
 
 ID numbers are integers used to uniquely identify the original comic strip from which images and dialog are taken. Dates of the form YYYYMMDD work well for this and are recommended.
 
+Excluding image files, the first non-blank line of an input file is a number identifying which comic strip this file corresponds to. ID numbers in these files are only used by the program to quickly check whether the input file is in the correct format: the ID must be an integer and must be the same as the ID in the file name. It's like when Van Halen put a ["no brown M&Ms" requirement](http://www.snopes.com/music/artists/vanhalen.asp) in their contracts: the colors of the M&Ms were not actually important; brown M&Ms would serve as a sign that something else might be wrong.
+
 Each character has a label. For the sake of flexibility, these labels are not hard-coded into the program. Differences in spelling will be interpreted by the program as different characters. For this reason, it is recommended that only the character's initials be used, e.g. M = Mimi and E = Eunice. Additionally, the following labels are recommended:
 
 * MISC = miscellaneous/offscreen character dialogue (for when the character is not clearly identifiable)
@@ -39,8 +41,6 @@ All input files are either images (any common format is acceptable; PNG format i
 This format is a based on the one described [here](http://www.joshmillard.com/2015/07/06/wanna-help-edit-calvin-and-hobbes-transcripts/).
 
 These transcript files should be in the transcripts/ folder. A transcript file's name should be its ID number followed by the ".txt" file extension.
-
-The first non-blank line of a file is a number identifying which comic strip this transcript represents. ID numbers in these dialog transcript files are only used by the program to quickly check whether the input file is in the correct format: the ID must be an integer and must be the same as the ID in the file name.
 
 All the lines after the ID represent dialog or sound effects. These lines take the form of a character label, a colon, a space, and then whatever dialog the character speaks.
 
@@ -79,7 +79,7 @@ All following lines should take the form of one character label, a tab, the X co
 If multiple characters use the same speech bubble (saying the same thing at the same time), create separate lines in the file - one for each speaker, one line coming immediately after the other - with identical speech bubble coordinates.
 
 #### Example
-	//The image is stored as images/20101210.png; this definition file is stored as definitions/20101210.tsv
+	//The image is stored as images/20101210.png; this definition file is stored as word-bubbles/20101210.tsv
 	E	M //List of speakers
 	//Speaker	X	Y	X	Y
 	E	37	6	180	69
@@ -90,8 +90,8 @@ If multiple characters use the same speech bubble (saying the same thing at the 
 ## Fonts
 The program will use the first usable font it finds, searching in the following order:
 
-1. A font file specified on the command line
-2. Font files in the "./fonts" directory
+1. A font file specified on the command line ("--font" on the command line)
+2. Font files in the "fonts" subdirectory of the input directory ("--indir" on the command line)
 3. [Nina](https://archive.org/details/NinaPaleyFonts)
 4. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
 5. [Tomson Talks](http://frabru.de/c.php/resource/font/TomsonTalks/)
