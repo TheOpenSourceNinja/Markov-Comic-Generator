@@ -252,7 +252,7 @@ for generatedComicNumber in range( numberOfComics ):
 				pass
 		
 		if not fontLoaded:
-			families = [ "Nina", "Humor Sans", "Tomson Talks", "Comic Sans MS", "Ubuntu Titling" ]
+			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ]
 			for family in families:
 				if fontLoaded:
 					break

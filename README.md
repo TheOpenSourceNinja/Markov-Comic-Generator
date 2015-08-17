@@ -89,10 +89,19 @@ If multiple characters use the same speech bubble (saying the same thing at the 
 The program will use the first usable font it finds, searching in the following order:
 
 1. A font file specified on the command line ("--font" on the command line)
-2. Font files in the "fonts" subdirectory of the input directory ("--indir" on the command line)
-3. [Nina](https://archive.org/details/NinaPaleyFonts)
-4. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
-5. [Tomson Talks](http://frabru.de/c.php/resource/font/TomsonTalks/)
-6. Comic Sans MS
-7. [Ubuntu Titling](http://www.fontsquirrel.com/fonts/Ubuntu-Titling)
-8. Any other font
+1. All font files in the "fonts" subdirectory of the input directory ("--indir" on the command line, defaults to the working directory if not specified)
+1. [Nina](https://archive.org/details/NinaPaleyFonts)
+1. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
+1. [Tomson Talks](http://purl.org/net/2008,frankbruder/font/TomsonTalks)
+1. [Nibby](http://www.abstractfonts.com/font/15016)
+1. [Vipond Comic](http://wat.midco.net/jvipond/miscellany/comicfont.html)
+1. [Comic Neue](http://comicneue.com/)
+1. [Comic Relief](http://loudifier.com/comic-relief/)
+1. [Dekko](https://github.com/EbenSorkin/Dekko)
+1. [Ruji's Handwriting Font](http://openfontlibrary.org/en/font/ruji-s-handwriting-font/)
+1. [Open Comic Font](https://github.com/arthursucks/opencomicfont)
+1. [Comic Sans MS](http://www.microsoft.com/typography/fonts/family.aspx%3FFID%3D3)
+1. [Ubuntu Titling](http://www.fontsquirrel.com/fonts/Ubuntu-Titling)
+1. Any other font
+
+It is planned that in the future, should a particular font not have required glyphs, a suitable replacement font will be used for only those glyphs. This is not yet implemented.
