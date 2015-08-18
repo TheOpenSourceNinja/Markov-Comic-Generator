@@ -172,7 +172,6 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 						print( "No usable fonts found. Using default font." )
 					font = ImageFont.load_default()
 					fontFile = None
-	print( "fontFile:", fontFile )
 	return fontFile
 
 def usage():
