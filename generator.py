@@ -4,40 +4,9 @@ import random
 import os
 import sys
 from idchecker import idChecker
+from markovnode import MarkovNode
 
 class Generator:
-	class MarkovNode:
-		def __init__( self, isEnd ):
-			'''Initialize. Duh.
-				Args:
-					isEnd: A Boolean indicating whether this node is the end of a sentence.
-			'''
-			self.links = dict()
-			self.isEndOfSentence = isEnd
-	
-		def getRandomLinkedWord( self ):
-			'''Randomly select one of the nodes to which this node is linked.
-			'''
-			return random.choice( list( self.links.keys() ) ) #TODO: Use weighted randomness
-	
-		def hasLinks( self ):
-			'''Determine whether this node has any links.
-			'''
-			return len( self.links ) > 0
-	
-		def addLink( self, other ):
-			'''Add to this node a link to another node.
-				Args:
-					other: The other node to which to link.
-				Returns:
-					The number of links this node has after adding the new link.
-			'''
-			if other not in self.links:
-				self.links[ other ] = 1
-			else:
-				self.links[ other ] += 1 #If there is already a link to the other node, increase the link's value.
-			return len( self.links )
-	
 	def __init__( self, charLabel, cm = "//" ):
 		'''Just does what the name implies.
 			Args:
@@ -86,9 +55,9 @@ class Generator:
 							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
 			
 							if word not in self.nodes.keys():
-								self.nodes[ word ] = self.MarkovNode( isEnd )
+								self.nodes[ word ] = MarkovNode( isEnd )
 							if not previousWord == "":
-								if self.nodes[ previousWord ].isEndOfSentence and ( word not in self.sentenceStarts ):
+								if self.nodes[ previousWord ].isEndOfSentence:
 									self.sentenceStarts.append( word )
 								else:
 									self.nodes[ previousWord ].addLink( word )
