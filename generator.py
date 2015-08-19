@@ -58,13 +58,13 @@ class Generator:
 							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
 			
 							if word not in self.nodes.keys():
-								self.nodes[ word ] = MarkovNode( isEnd )
+								self.nodes[ word ] = MarkovNode( word, isEnd )
 								
 							if not previousWord == None:
 								if self.nodes[ previousWord ].isEndOfSentence:
 									self.sentenceStarts.append( word )
 								else:
-									self.nodes[ previousWord ].addLink( word )
+									self.nodes[ previousWord ].addLink( self.nodes[ word ] )
 							else:
 								if word not in self.sentenceStarts:
 									self.sentenceStarts.append( word )
@@ -86,15 +86,17 @@ class Generator:
 			Args:
 				numberOfSentences: The number of sentences to generate. Defaults to 1.
 			Returns:
-				A list of strings, each string containing one sentence.
+				A list of ( lists of( Markov nodes ) ), each Markov node representing one word and each list of Markov nodes representing one sentence.
 		'''
 		result = []
 		for i in range ( numberOfSentences ):
 			currentWord = random.choice( self.sentenceStarts )
-			sentence = currentWord
+			sentence = []
+			sentence.append( self.nodes[ currentWord ] )
 			while self.nodes[ currentWord ].hasLinks() and not self.nodes[ currentWord ].isEndOfSentence:
-				currentWord = self.nodes[ currentWord ].getRandomLinkedWord()
-				sentence += " " + currentWord
+				currentWord = self.nodes[ currentWord ].getRandomLinkedNode().word
+				#sentence += " " + currentWord
+				sentence.append( self.nodes[ currentWord ] )
 			
 			result.append( sentence )
 		return result

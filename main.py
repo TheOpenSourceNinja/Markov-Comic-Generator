@@ -10,6 +10,7 @@ from PIL import Image, ImageFont, ImageDraw, ImageColor, ImageStat
 from PIL.PngImagePlugin import PngInfo
 from generator import Generator
 from idchecker import idChecker
+from markovnode import MarkovNode
 
 #Exit statuses
 #These are copied from my /usr/include/sysexits.h. Only statuses possibly relevant to this program were copied.
@@ -327,10 +328,32 @@ for generatedComicNumber in range( numberOfComics ):
 				print( "Error: Word bubble file", wordBubbleFileName, "does not list", character, "in its list of speakers.", file=sys.stderr )
 				exit( EX_DATAERR )
 			
-			text = " ".join( generator.generateSentences( 1 ) )
-			transcript += character + ": " + text + "\n" #print( character, ": ", text, sep="", file=outFile )
+			text = ""
+			nodeList = generator.generateSentences( 1 )[ 0 ]
+			for node in nodeList:
+				text += node.word + " "
+			text.rstrip()
+			
+			oneCharacterTranscript = character + ": "
+			for node in nodeList:
+				prefix = ""
+				postfix = ""
+				if node.isBold():
+					prefix = "*" + prefix
+					postfix = postfix + "*"
+				if node.isItalic():
+					prefix = "/" + prefix
+					postfix = postfix + "/"
+				if node.isUnderlined():
+					prefix = "_" + prefix
+					postfix = postfix + "_"
+				
+				oneCharacterTranscript += prefix + node.word + postfix + " "
+			oneCharacterTranscript.rstrip()
 			if not silence:
-				print( character, ": ", text, sep="" )
+				print( oneCharacterTranscript )
+			oneCharacterTranscript += "\n"
+			transcript += oneCharacterTranscript
 		
 			topLeftX = int( line[ 1 ] )
 			topLeftY = int( line[ 2 ] )

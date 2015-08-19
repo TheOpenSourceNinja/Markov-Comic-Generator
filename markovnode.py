@@ -3,7 +3,7 @@
 import random
 
 class MarkovNode:
-	def __init__( self, isEnd ):
+	def __init__( self, word, isEnd ):
 		'''Initialize. Duh.
 			Args:
 				isEnd: A Boolean indicating whether this node is the end of a sentence.
@@ -15,6 +15,8 @@ class MarkovNode:
 		self.numBold = 0
 		self.numItalic = 0
 		self.numUnderlined = 0
+		
+		self.word = word
 	
 	def randomBoolean( self, probability ):
 		'''Get a random true or false value, with the given probability of being true.
@@ -31,17 +33,17 @@ class MarkovNode:
 	def isBold( self ):
 		'''Determine randomly whether this node should be rendered as bold text.
 		'''
-		return randomBoolean( self.numBold / self.numTotal )
+		return self.randomBoolean( self.numBold / self.numTotal )
 	
 	def isItalic( self ):
 		'''Determine randomly whether this node should be rendered as italicized text.
 		'''
-		return randomBoolean( self.numItalic / self.numTotal )
+		return self.randomBoolean( self.numItalic / self.numTotal )
 	
 	def isUnderlined( self ):
 		'''Determine randomly whether this node should be rendered as underlined text.
 		'''
-		return randomBoolean( self.numUnderlined / self.numTotal )
+		return self.randomBoolean( self.numUnderlined / self.numTotal )
 	
 	def addNormal( self ):
 		'''Increment the total counter only.
@@ -66,7 +68,7 @@ class MarkovNode:
 		self.numUnderlined += 1
 		self.numTotal += 1
 
-	def getRandomLinkedWord( self ):
+	def getRandomLinkedNode( self ):
 		'''Randomly select one of the nodes to which this node is linked.
 		'''
 		return random.choice( self.links )
