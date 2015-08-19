@@ -43,6 +43,11 @@ class MarkovNode:
 		'''
 		return randomBoolean( self.numUnderlined / self.numTotal )
 	
+	def addNormal( self ):
+		'''Increment the total counter only.
+		'''
+		self.numTotal += 1
+	
 	def addBold( self ):
 		'''Increment the bold and total counters.
 		'''

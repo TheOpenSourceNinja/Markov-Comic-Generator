@@ -45,27 +45,40 @@ class Generator:
 		
 			self.nodes = dict()
 			self.sentenceStarts = []
-			previousWord = ""
+			previousWord = None
 			for line in self.lines:
 				if( len( line ) > 0 ):
 					for word in line:
+						isBold = "*" in word
+						isItalic = "/" in word
+						isUnderlined = "_" in word
 						word = word.strip("*/_") #Remove emphasis
-						word = word.strip() #Remove whitespace
+						
 						if len( word ) > 0:
 							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
 			
 							if word not in self.nodes.keys():
 								self.nodes[ word ] = MarkovNode( isEnd )
-							if not previousWord == "":
+								
+							if not previousWord == None:
 								if self.nodes[ previousWord ].isEndOfSentence:
 									self.sentenceStarts.append( word )
 								else:
 									self.nodes[ previousWord ].addLink( word )
-				
 							else:
 								if word not in self.sentenceStarts:
 									self.sentenceStarts.append( word )
-			
+							
+							if isBold:
+								self.nodes[ word ].addBold()
+							if isItalic:
+								self.nodes[ word ].addItalic()
+							if isUnderlined:
+								self.nodes[ word ].addUnderlined()
+							
+							if not isBold and not isItalic and not isUnderlined:
+								self.nodes[ word ].addNormal()
+							
 							previousWord = word
 			
 	def generateSentences(self, numberOfSentences = 1):
