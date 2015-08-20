@@ -32,11 +32,34 @@ commentMark = commentMarkDefault = "//" #If in the future we decide to use a dif
 commandLineFont = None #If a font file is specified on the command line, this will be set.
 topImageFileName = None
 
-def findCharsPerLine( text, font, maxWidth ):
+def stringFromNodes( nodeList, useFormatting = True ):
+	'''Given a list of nodes, put them all into a string.
+	'''
+	result = ""
+	for node in nodeList:
+		prefix = ""
+		postfix = ""
+		
+		if useFormatting:
+			if node.isBold():
+				prefix = "*" + prefix
+				postfix = postfix + "*"
+			if node.isItalic():
+				prefix = "/" + prefix
+				postfix = postfix + "/"
+			if node.isUnderlined():
+				prefix = "_" + prefix
+				postfix = postfix + "_"
+		
+		result += prefix + node.word + postfix + " "
+	result.rstrip()
+	return result
+
+def findCharsPerLine( text, normalFont, maxWidth ):
 	'''Find how many characters will fit within the specified width.
 		Args:
 			text: The string whose contents are used to test character width.
-			font: The font used to test character width.
+			normalFont: The font used to test character width.
 			maxWidth: The maximum width in pixels.
 		Returns:
 			An integer indicating how many characters fit within maxWidth.
@@ -45,12 +68,12 @@ def findCharsPerLine( text, font, maxWidth ):
 	if maxWidth < 1:
 		maxWidth = 1
 	
-	charsPerLine = maxWidth // font.getsize( "L" )[0]
+	charsPerLine = maxWidth // normalFont.getsize( "L" )[0]
 	
 	if charsPerLine < 1:
 		charsPerLine = 1
 	
-	while font.getsize( text[ :charsPerLine ] )[0] > maxWidth:
+	while normalFont.getsize( text[ :charsPerLine ] )[0] > maxWidth:
 		charsPerLine -= 1
 	
 	if charsPerLine < 1:
@@ -58,23 +81,29 @@ def findCharsPerLine( text, font, maxWidth ):
 	
 	return charsPerLine
 
-def rewrap( text, font, maxWidth, center=True ):
+def rewrap( nodeList, normalFont, maxWidth, center=True ):
 	'''Rewrap and center text.
 		Args:
-			text: A string containing the text to be wrapped.
-			font: Gets passed to findCharsPerLine().
+			nodeList: A list of nodes containing the text to be wrapped.
+			normalFont: Gets passed to findCharsPerLine().
 			maxWidth: Gets passed to findCharsPerLine().
 			center: A Boolean indicating whether text should be centered after wrapping. Spaces will be added around each line of text if true. Defaults to True.
 		Returns:
 			A list of strings.
 	'''
-	charsPerLine = findCharsPerLine( text, font, maxWidth )
+	text = stringFromNodes( nodeList, useFormatting = False )
+	charsPerLine = findCharsPerLine( text, normalFont, maxWidth )
 	temp = textwrap.wrap( text, width = charsPerLine, break_long_words = False )
 	
 	result = []
 	for line in temp:
 		if len( line ) > charsPerLine:
-			if "-" in line :
+			if "\N{SOFT HYPHEN}" in line:
+				#Split on hyphens if there are any...
+				splitted = line.split( "\N{SOFT HYPHEN}", 1 )
+				firstHalf = splitted[ 0 ] + "-"
+				secondHalf = splitted[ 1 ]
+			elif "-" in line :
 				#Split on hyphens if there are any...
 				splitted = line.split( "-", 1 )
 				firstHalf = splitted[ 0 ] + "-"
@@ -89,6 +118,8 @@ def rewrap( text, font, maxWidth, center=True ):
 			result.append( firstHalf )
 			result.append( secondHalf )
 		else:
+			if "\N{SOFT HYPHEN}" in line:
+				line = line.replace( "\N{SOFT HYPHEN}", "" )
 			if center:
 				line = line.center( charsPerLine )
 			result.append( line )
@@ -108,7 +139,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 	try:
 		if not silence:
 			print( "Trying to load font from file", commandLineFont )
-		font = ImageFont.truetype( commandLineFont, size=size )
+		normalFont = ImageFont.truetype( commandLineFont, size=size )
 		fontFile = commandLineFont
 		fontLoaded = True
 	except ( IOError, OSError ):
@@ -124,7 +155,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 				if not silence:
 					print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 				if charToCheck == None or testFile.has_char( charToCheck ):
-					font = ImageFont.truetype( testFile.file, size=size )
+					normalFont = ImageFont.truetype( testFile.file, size=size )
 					fontLoaded = True
 					fontFile = testFile.file
 					break
@@ -145,7 +176,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 						if not silence:
 							print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 						if charToCheck == None or testFile.has_char( charToCheck ):
-							font = ImageFont.truetype( testFile.file, size=size )
+							normalFont = ImageFont.truetype( testFile.file, size=size )
 							fontLoaded = True
 							fontFile = testFile.file
 							break
@@ -161,7 +192,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 						if not silence:
 							print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 						if charToCheck == None or testFile.has_char( charToCheck ):
-							font = ImageFont.truetype( testFile.file, size=size )
+							normalFont = ImageFont.truetype( testFile.file, size=size )
 							fontLoaded = True
 							fontFile = testFile.file
 							break
@@ -170,8 +201,8 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 				if not fontLoaded:
 					#This should only be reachable if the system has absolutely no fonts
 					if not silence:
-						print( "No usable fonts found. Using default font." )
-					font = ImageFont.load_default()
+						print( "No usable fonts found. Using default normalFont." )
+					normalFont = ImageFont.load_default()
 					fontFile = None
 	return fontFile
 
@@ -312,7 +343,7 @@ for generatedComicNumber in range( numberOfComics ):
 
 	size = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
 	
-	font = ImageFont.truetype( fontFile, size = size )
+	normalFont = ImageFont.truetype( fontFile, size = size )
 	
 	transcript = str( comicID ) + "\n"
 	
@@ -335,21 +366,7 @@ for generatedComicNumber in range( numberOfComics ):
 			text.rstrip()
 			
 			oneCharacterTranscript = character + ": "
-			for node in nodeList:
-				prefix = ""
-				postfix = ""
-				if node.isBold():
-					prefix = "*" + prefix
-					postfix = postfix + "*"
-				if node.isItalic():
-					prefix = "/" + prefix
-					postfix = postfix + "/"
-				if node.isUnderlined():
-					prefix = "_" + prefix
-					postfix = postfix + "_"
-				
-				oneCharacterTranscript += prefix + node.word + postfix + " "
-			oneCharacterTranscript.rstrip()
+			oneCharacterTranscript += stringFromNodes( nodeList )
 			if not silence:
 				print( oneCharacterTranscript )
 			oneCharacterTranscript += "\n"
@@ -371,13 +388,13 @@ for generatedComicNumber in range( numberOfComics ):
 			if height <= 0:
 				height = 1
 			
-			newText = rewrap( text, font, width )
+			newText = rewrap( nodeList, normalFont, width )
 			
 			margin = 0
 			offset = originalOffset = 0
 			fontSize = size
 			goodSizeFound = False
-			usedFont = font
+			usedFont = normalFont
 			while not goodSizeFound:
 				offset = originalOffset
 				for line in newText:
@@ -397,7 +414,7 @@ for generatedComicNumber in range( numberOfComics ):
 					except IOError as error:
 						print( error, "\nUsing default font instead.", file=sys.stderr )
 						usedFont = ImageFont.load_default()
-					newText = rewrap( text, usedFont, width )
+					newText = rewrap( nodeList, usedFont, width )
 		
 			midX = int( wordBubble.size[ 0 ] / 2 )
 			midY = int( wordBubble.size[ 1 ] / 2 )
@@ -406,19 +423,32 @@ for generatedComicNumber in range( numberOfComics ):
 				backgroundColor = ImageStat.Stat( wordBubble ).mean #wordBubble.getpixel( ( midX, midY ) )
 				textColorList = []
 				
+				useIntegers = False
+				useFloats = False
 				if wordBubble.mode.startswith( "1" ):
 					bandMax = 1
+					useIntegers = True
 				elif wordBubble.mode.startswith( "L" ) or wordBubble.mode.startswith( "P" ) or wordBubble.mode.startswith( "RGB" ) or wordBubble.mode.startswith( "CMYK" ) or wordBubble.mode.startswith( "YCbCr" ) or wordBubble.mode.startswith( "LAB" ) or wordBubble.mode.startswith( "HSV" ):
 					bandMax = 255
+					useIntegers = True
 				elif wordBubble.mode.startswith( "I" ):
 					bandMax = 2147483647 #max for a 32-bit signed integer
+					useIntegers = True
 				elif wordBubble.mode.startswith( "F" ):
 					bandMax = float( infinity )
+					useFloats = True
 				else: #I've added all modes currently supported according to Pillow documentation; this is for future compatibility
-					bandMax = max( ImageStat.Stat( wordBubble ).extrema )
+					bandMax = max( ImageStat.Stat( image ).extrema )
 				
 				for c in backgroundColor:
-					textColorList.append( int( bandMax - c ) )
+					d = bandMax - c
+					
+					if useIntegers:
+						d = int( d )
+					elif useFloats:
+						d = float( d )
+					
+					textColorList.append( d )
 				
 				if wordBubble.mode.endswith( "A" ): #Pillow supports two modes with alpha channels
 					textColorList[ -1 ] = bandMax
