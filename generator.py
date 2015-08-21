@@ -61,7 +61,7 @@ class Generator:
 								self.nodes[ word ] = MarkovNode( word, isEnd )
 								
 							if not previousWord == None:
-								if self.nodes[ previousWord ].isEndOfSentence:
+								if self.nodes[ previousWord ].isEnd:
 									self.sentenceStarts.append( word )
 								else:
 									self.nodes[ previousWord ].addLink( self.nodes[ word ] )
@@ -93,7 +93,7 @@ class Generator:
 			currentWord = random.choice( self.sentenceStarts )
 			sentence = []
 			sentence.append( self.nodes[ currentWord ] )
-			while self.nodes[ currentWord ].hasLinks() and not self.nodes[ currentWord ].isEndOfSentence:
+			while self.nodes[ currentWord ].hasLinks() and not self.nodes[ currentWord ].isEnd:
 				currentWord = self.nodes[ currentWord ].getRandomLinkedNode().word
 				#sentence += " " + currentWord
 				sentence.append( self.nodes[ currentWord ] )

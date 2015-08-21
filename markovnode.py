@@ -3,20 +3,28 @@
 import random
 
 class MarkovNode:
-	def __init__( self, word, isEnd ):
+	def __init__( self, word, isEnd = False, isBold = False, isItalic = False, isUnderlined = False ):
 		'''Initialize. Duh.
 			Args:
 				isEnd: A Boolean indicating whether this node is the end of a sentence.
 		'''
 		self.links = []
-		self.isEndOfSentence = isEnd
+		self.isEnd = isEnd
 		
 		self.numTotal = 0
 		self.numBold = 0
 		self.numItalic = 0
 		self.numUnderlined = 0
 		
+		if isBold:
+			self.addBold()
+		if isItalic:
+			self.addItalic()
+		if isUnderlined:
+			self.addUnderlined()
+		
 		self.word = word
+		self.font = None #Will be set in main.py
 	
 	def randomBoolean( self, probability ):
 		'''Get a random true or false value, with the given probability of being true.
