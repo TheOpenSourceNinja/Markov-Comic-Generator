@@ -3,7 +3,7 @@
 import random
 
 class MarkovNode:
-	def __init__( self, word, isEnd = False, isBold = False, isItalic = False, isUnderlined = False ):
+	def __init__( self, word, isEnd = False, isBold = False, isItalic = False, isUnderlined = False, font = None ):
 		'''Initialize. Duh.
 			Args:
 				isEnd: A Boolean indicating whether this node is the end of a sentence.
@@ -26,7 +26,7 @@ class MarkovNode:
 			self.addNormal()
 		
 		self.word = word
-		self.font = None #Will be set in main.py
+		self.font = font
 	
 	def randomBoolean( self, probability ):
 		'''Get a random true or false value, with the given probability of being true.

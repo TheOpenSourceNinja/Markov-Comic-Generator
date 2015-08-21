@@ -129,8 +129,8 @@ def rewrap( nodeList, normalFont, maxWidth, center=True ):
 				firstSection = node.word[ :middle ] + "-"
 				secondSection = node.word[ middle: ]
 			
-			firstSectionNode = MarkovNode( firstSection, node.isEnd, isBold = boldNodes[ node ], isItalic = italicNodes[ node ], isUnderlined = underlinedNodes[ node ] )
-			secondSectionNode = MarkovNode( secondSection, node.isEnd, isBold = boldNodes[ node ], isItalic = italicNodes[ node ], isUnderlined = underlinedNodes[ node ] )
+			firstSectionNode = MarkovNode( firstSection, node.isEnd, isBold = boldNodes[ node ], isItalic = italicNodes[ node ], isUnderlined = underlinedNodes[ node ], font = node.font )
+			secondSectionNode = MarkovNode( secondSection, node.isEnd, isBold = boldNodes[ node ], isItalic = italicNodes[ node ], isUnderlined = underlinedNodes[ node ], font = node.font )
 			lineList.append( firstSectionNode )
 			temp.append( lineList )#stringFromNodes( lineList, useFormatting = False ) )
 			lineList = [ secondSectionNode ]
@@ -143,25 +143,29 @@ def rewrap( nodeList, normalFont, maxWidth, center=True ):
 		for node in nodeList:
 			node.word = "".join( [ ch for ch in node.word if ch.isprintable() ] )
 			line.append( node )
-		temp2.append( stringFromNodes( line, useFormatting = False ) )
+		temp2.append( line )
 	
 	result = []
 	if center:
 		for line in temp2:
-			lineWidth = normalFont.getsize( line )[ 0 ]
-			#print( "line:", line, "width:", lineWidth )
+			lineWidth = 0 #normalFont.getsize( line )[ 0 ]
+			
+			for node in line:
+				lineWidth += normalFont.getsize( " " )[ 0 ] + node.font.getsize( node.word )[ 0 ]
+			
+			lineWidth -= normalFont.getsize( " " )[ 0 ]
+			
 			if lineWidth < maxWidth:
 				difference = maxWidth - lineWidth
 				spaceWidth = normalFont.getsize( " " )[ 0 ]
-				if spaceWidth < difference:
+				if spaceWidth > 0 and spaceWidth < difference:
 					difference = difference - spaceWidth
-					numberOfSpaces = ( difference // spaceWidth ) // 2
+					numberOfSpaces = int( ( difference / spaceWidth ) // 2 )
 					#print( "numberOfSpaces:", numberOfSpaces )
-					spacesString = ""
 					for i in range( numberOfSpaces ):
-						spacesString += " "
-					line = spacesString + line
-			result.append( line )
+						line.insert( 0, MarkovNode( word="", font=normalFont ) ) #Spaces get inserted between nodes, so these nodes are blank
+					#line = spacesString + line
+			result.append( stringFromNodes( line, useFormatting = False ) )
 	
 	return result
 

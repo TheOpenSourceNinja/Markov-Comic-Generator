@@ -91,8 +91,7 @@ class Generator:
 		result = []
 		for i in range ( numberOfSentences ):
 			currentWord = random.choice( self.sentenceStarts )
-			sentence = []
-			sentence.append( self.nodes[ currentWord ] )
+			sentence = [ self.nodes[ currentWord ] ]
 			while self.nodes[ currentWord ].hasLinks() and not self.nodes[ currentWord ].isEnd:
 				currentWord = self.nodes[ currentWord ].getRandomLinkedNode().word
 				#sentence += " " + currentWord
