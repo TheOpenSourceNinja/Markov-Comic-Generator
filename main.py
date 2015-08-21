@@ -93,17 +93,36 @@ def rewrap( nodeList, normalFont, maxWidth, center=True ):
 	'''
 	
 	line = ""
-	result = []
+	temp = []
 	for node in nodeList:
 		lineWidth = normalFont.getsize( line )[ 0 ]
 		wordWidth = normalFont.getsize( node.word )[ 0 ]
 		if lineWidth + wordWidth <= maxWidth:
 			line += node.word + " "
 		else:
-			result.append( line.rstrip() )
+			temp.append( line.rstrip() )
 			line = node.word + " "
 	line = line.rstrip()
-	result.append( line )
+	temp.append( line )
+	
+	result = []
+	if center:
+		for line in temp:
+			lineWidth = normalFont.getsize( line )[ 0 ]
+			print( "line:", line, "width:", lineWidth )
+			if lineWidth < maxWidth:
+				difference = maxWidth - lineWidth
+				spaceWidth = normalFont.getsize( " " )[ 0 ]
+				if spaceWidth < difference:
+					difference = difference - spaceWidth
+					numberOfSpaces = ( difference // spaceWidth ) // 2
+					print( "numberOfSpaces:", numberOfSpaces )
+					spacesString = ""
+					for i in range( numberOfSpaces ):
+						spacesString += " "
+					line = spacesString + line
+			result.append( line )
+	
 	return result
 	#text = stringFromNodes( nodeList, useFormatting = False )
 	#charsPerLine = findCharsPerLine( text, normalFont, maxWidth )
