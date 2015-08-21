@@ -22,6 +22,8 @@ class MarkovNode:
 			self.addItalic()
 		if isUnderlined:
 			self.addUnderlined()
+		if not isBold and not isItalic and not isUnderlined:
+			self.addNormal()
 		
 		self.word = word
 		self.font = None #Will be set in main.py

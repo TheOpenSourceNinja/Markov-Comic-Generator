@@ -92,31 +92,71 @@ def rewrap( nodeList, normalFont, maxWidth, center=True ):
 			A list of strings.
 	'''
 	
-	line = ""
+	boldNodes = dict()
+	italicNodes = dict()
+	underlinedNodes = dict()
+	for node in nodeList:
+		node.font = normalFont
+		boldNodes[ node ] = node.isBold()
+		italicNodes[ node ] = node.isItalic()
+		underlinedNodes[ node] = node.isUnderlined()
+	
+	lineList = []
 	temp = []
 	for node in nodeList:
-		lineWidth = normalFont.getsize( line )[ 0 ]
-		wordWidth = normalFont.getsize( node.word )[ 0 ]
+		#print( "number:", number, "node:", node )
+		lineWidth = normalFont.getsize( stringFromNodes( lineList ) )[ 0 ]
+		wordWidth = node.font.getsize( node.word )[ 0 ]
 		if lineWidth + wordWidth <= maxWidth:
-			line += node.word + " "
+			lineList.append( node )
+		elif wordWidth <= maxWidth:
+			temp.append( lineList )#stringFromNodes( lineList, useFormatting = False ) )
+			lineList = [ node ]
 		else:
-			temp.append( line.rstrip() )
-			line = node.word + " "
-	line = line.rstrip()
-	temp.append( line )
+			#temp.append( stringFromNodes( lineList, useFormatting = False ) )#.rstrip() )
+			#line = node.word + " "
+			if "\N{SOFT HYPHEN}" in node.word:
+				#Split on hyphens if there are any...
+				splitted = node.word.split( "\N{SOFT HYPHEN}", 1 )
+				firstSection = splitted[ 0 ] + "-"
+				secondSection = splitted[ 1 ]
+			elif "-" in node.word:
+				splitted = node.word.split( "-", 1 )
+				firstSection = splitted[ 0 ] + "-"
+				secondSection = splitted[ 1 ]
+			else:
+				middle = len( node.word ) // 2
+				firstSection = node.word[ :middle ] + "-"
+				secondSection = node.word[ middle: ]
+			
+			firstSectionNode = MarkovNode( firstSection, node.isEnd, isBold = boldNodes[ node ], isItalic = italicNodes[ node ], isUnderlined = underlinedNodes[ node ] )
+			secondSectionNode = MarkovNode( secondSection, node.isEnd, isBold = boldNodes[ node ], isItalic = italicNodes[ node ], isUnderlined = underlinedNodes[ node ] )
+			lineList.append( firstSectionNode )
+			temp.append( lineList )#stringFromNodes( lineList, useFormatting = False ) )
+			lineList = [ secondSectionNode ]
+	#line = line.rstrip()
+	temp.append( lineList )#stringFromNodes( lineList, useFormatting = False ) )
+	
+	temp2 = []
+	for nodeList in temp:
+		line = []
+		for node in nodeList:
+			node.word = "".join( [ ch for ch in node.word if ch.isprintable() ] )
+			line.append( node )
+		temp2.append( stringFromNodes( line, useFormatting = False ) )
 	
 	result = []
 	if center:
-		for line in temp:
+		for line in temp2:
 			lineWidth = normalFont.getsize( line )[ 0 ]
-			print( "line:", line, "width:", lineWidth )
+			#print( "line:", line, "width:", lineWidth )
 			if lineWidth < maxWidth:
 				difference = maxWidth - lineWidth
 				spaceWidth = normalFont.getsize( " " )[ 0 ]
 				if spaceWidth < difference:
 					difference = difference - spaceWidth
 					numberOfSpaces = ( difference // spaceWidth ) // 2
-					print( "numberOfSpaces:", numberOfSpaces )
+					#print( "numberOfSpaces:", numberOfSpaces )
 					spacesString = ""
 					for i in range( numberOfSpaces ):
 						spacesString += " "
@@ -124,40 +164,6 @@ def rewrap( nodeList, normalFont, maxWidth, center=True ):
 			result.append( line )
 	
 	return result
-	#text = stringFromNodes( nodeList, useFormatting = False )
-	#charsPerLine = findCharsPerLine( text, normalFont, maxWidth )
-	#temp = textwrap.wrap( text, width = charsPerLine, break_long_words = False )
-	#
-	#result = []
-	#for line in temp:
-	#	if len( line ) > charsPerLine:
-	#		if "\N{SOFT HYPHEN}" in line:
-	#			#Split on hyphens if there are any...
-	#			splitted = line.split( "\N{SOFT HYPHEN}", 1 )
-	#			firstHalf = splitted[ 0 ] + "-"
-	#			secondHalf = splitted[ 1 ]
-	#		elif "-" in line :
-	#			#Split on hyphens if there are any...
-	#			splitted = line.split( "-", 1 )
-	#			firstHalf = splitted[ 0 ] + "-"
-	#			secondHalf = splitted[ 1 ]
-	#		else:
-	#			middle = len( line ) // 2
-	#			firstHalf = line[ :middle ] + "-"
-	#			secondHalf = line[ middle: ]
-	#		if center:
-	#			firstHalf = firstHalf.center( charsPerLine )
-	#			secondHalf = secondHalf.center( charsPerLine )
-	#		result.append( firstHalf )
-	#		result.append( secondHalf )
-	#	else:
-	#		if "\N{SOFT HYPHEN}" in line:
-	#			line = line.replace( "\N{SOFT HYPHEN}", "" )
-	#		if center:
-	#			line = line.center( charsPerLine )
-	#		result.append( line )
-	#
-	#return result
 
 def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None ):
 	fontLoaded = False
