@@ -392,6 +392,9 @@ for generatedComicNumber in range( numberOfComics ):
 	
 	for line in wordBubbleFile:
 		line = line.partition( commentMark )[ 0 ].strip()
+		
+		previousBox = ( -1, -1, -1, -1 ) #For detecting when two characters share a speech bubble; don't generate text twice.
+		
 		if len( line ) > 0:
 			line = line.split( "\t" )
 			character = line[ 0 ].rstrip( ":" ).strip().upper()
@@ -421,94 +424,98 @@ for generatedComicNumber in range( numberOfComics ):
 			bottomRightY = int( line[ 4 ] )
 		
 			box = ( topLeftX, topLeftY, bottomRightX, bottomRightY )
-			wordBubble = image.crop( box )
-			draw = ImageDraw.Draw( wordBubble )
 			
-			width = bottomRightX - topLeftX
-			if width <= 0: #Width must be positive
-				width = 1
-			height = bottomRightY - topLeftY
-			if height <= 0:
-				height = 1
+			if box != previousBox:
+				previousBox = box
+				
+				wordBubble = image.crop( box )
+				draw = ImageDraw.Draw( wordBubble )
 			
-			newText = rewrap( nodeList, normalFont, width )
+				width = bottomRightX - topLeftX
+				if width <= 0: #Width must be positive
+					width = 1
+				height = bottomRightY - topLeftY
+				if height <= 0:
+					height = 1
 			
-			margin = 0
-			offset = originalOffset = 0
-			fontSize = size
-			goodSizeFound = False
-			usedFont = normalFont
-			while not goodSizeFound:
+				newText = rewrap( nodeList, normalFont, width )
+			
+				margin = 0
+				offset = originalOffset = 0
+				fontSize = size
+				goodSizeFound = False
+				usedFont = normalFont
+				while not goodSizeFound:
+					offset = originalOffset
+					for line in newText:
+						offset += usedFont.getsize( line )[1]
+					if offset > height:
+						goodSizeFound = False
+					else:
+						goodSizeFound = True
+						for newTextLine in newText:
+							if usedFont.getsize( newTextLine )[ 0 ] > width:
+								goodSizeFound = False
+								break
+					if not goodSizeFound:
+						fontSize -= 1
+						try:
+							usedFont = ImageFont.truetype( fontFile, size=fontSize )
+						except IOError as error:
+							print( error, "\nUsing default font instead.", file=sys.stderr )
+							usedFont = ImageFont.load_default()
+						newText = rewrap( nodeList, usedFont, width )
+		
+				midX = int( wordBubble.size[ 0 ] / 2 )
+				midY = int( wordBubble.size[ 1 ] / 2 )
+		
+				try: #Choose a text color that will be visible against the background
+					backgroundColor = ImageStat.Stat( wordBubble ).mean #wordBubble.getpixel( ( midX, midY ) )
+					textColorList = []
+				
+					useIntegers = False
+					useFloats = False
+					if wordBubble.mode.startswith( "1" ):
+						bandMax = 1
+						useIntegers = True
+					elif wordBubble.mode.startswith( "L" ) or wordBubble.mode.startswith( "P" ) or wordBubble.mode.startswith( "RGB" ) or wordBubble.mode.startswith( "CMYK" ) or wordBubble.mode.startswith( "YCbCr" ) or wordBubble.mode.startswith( "LAB" ) or wordBubble.mode.startswith( "HSV" ):
+						bandMax = 255
+						useIntegers = True
+					elif wordBubble.mode.startswith( "I" ):
+						bandMax = 2147483647 #max for a 32-bit signed integer
+						useIntegers = True
+					elif wordBubble.mode.startswith( "F" ):
+						bandMax = float( infinity )
+						useFloats = True
+					else: #I've added all modes currently supported according to Pillow documentation; this is for future compatibility
+						bandMax = max( ImageStat.Stat( image ).extrema )
+				
+					for c in backgroundColor:
+						d = bandMax - c
+					
+						if useIntegers:
+							d = int( d )
+						elif useFloats:
+							d = float( d )
+					
+						textColorList.append( d )
+				
+					if wordBubble.mode.endswith( "A" ): #Pillow supports two modes with alpha channels
+						textColorList[ -1 ] = bandMax
+				
+					textColor = tuple( textColorList )
+				
+				except ValueError:
+					textColor = "black"
+			
 				offset = originalOffset
 				for line in newText:
+					draw.text( ( margin, offset ), line, font=usedFont, fill=textColor )
 					offset += usedFont.getsize( line )[1]
-				if offset > height:
-					goodSizeFound = False
-				else:
-					goodSizeFound = True
-					for newTextLine in newText:
-						if usedFont.getsize( newTextLine )[ 0 ] > width:
-							goodSizeFound = False
-							break
-				if not goodSizeFound:
-					fontSize -= 1
-					try:
-						usedFont = ImageFont.truetype( fontFile, size=fontSize )
-					except IOError as error:
-						print( error, "\nUsing default font instead.", file=sys.stderr )
-						usedFont = ImageFont.load_default()
-					newText = rewrap( nodeList, usedFont, width )
+					if offset > bottomRightY - topLeftY and not silence:
+						print( "Warning: Text is too big vertically.", file=sys.stderr )
 		
-			midX = int( wordBubble.size[ 0 ] / 2 )
-			midY = int( wordBubble.size[ 1 ] / 2 )
-		
-			try: #Choose a text color that will be visible against the background
-				backgroundColor = ImageStat.Stat( wordBubble ).mean #wordBubble.getpixel( ( midX, midY ) )
-				textColorList = []
-				
-				useIntegers = False
-				useFloats = False
-				if wordBubble.mode.startswith( "1" ):
-					bandMax = 1
-					useIntegers = True
-				elif wordBubble.mode.startswith( "L" ) or wordBubble.mode.startswith( "P" ) or wordBubble.mode.startswith( "RGB" ) or wordBubble.mode.startswith( "CMYK" ) or wordBubble.mode.startswith( "YCbCr" ) or wordBubble.mode.startswith( "LAB" ) or wordBubble.mode.startswith( "HSV" ):
-					bandMax = 255
-					useIntegers = True
-				elif wordBubble.mode.startswith( "I" ):
-					bandMax = 2147483647 #max for a 32-bit signed integer
-					useIntegers = True
-				elif wordBubble.mode.startswith( "F" ):
-					bandMax = float( infinity )
-					useFloats = True
-				else: #I've added all modes currently supported according to Pillow documentation; this is for future compatibility
-					bandMax = max( ImageStat.Stat( image ).extrema )
-				
-				for c in backgroundColor:
-					d = bandMax - c
-					
-					if useIntegers:
-						d = int( d )
-					elif useFloats:
-						d = float( d )
-					
-					textColorList.append( d )
-				
-				if wordBubble.mode.endswith( "A" ): #Pillow supports two modes with alpha channels
-					textColorList[ -1 ] = bandMax
-				
-				textColor = tuple( textColorList )
-				
-			except ValueError:
-				textColor = "black"
-			
-			offset = originalOffset
-			for line in newText:
-				draw.text( ( margin, offset ), line, font=usedFont, fill=textColor )
-				offset += usedFont.getsize( line )[1]
-				if offset > bottomRightY - topLeftY and not silence:
-					print( "Warning: Text is too big vertically.", file=sys.stderr )
-		
-			image.paste( wordBubble, box )
+				image.paste( wordBubble, box )
 		
 	wordBubbleFile.close()
 	
