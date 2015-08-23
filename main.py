@@ -412,8 +412,6 @@ for generatedComicNumber in range( numberOfComics ):
 		
 			box = ( topLeftX, topLeftY, bottomRightX, bottomRightY )
 			
-			print( "box:", box, "pbox:", previousBox )
-			
 			if box != previousBox:
 				previousBox = box
 				
