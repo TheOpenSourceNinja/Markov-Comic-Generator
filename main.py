@@ -390,10 +390,10 @@ for generatedComicNumber in range( numberOfComics ):
 	
 	transcript = str( comicID ) + "\n"
 	
+	previousBox = ( int( -1 ), int( -1 ), int( -1 ), int( -1 ) ) #For detecting when two characters share a speech bubble; don't generate text twice.
+	
 	for line in wordBubbleFile:
 		line = line.partition( commentMark )[ 0 ].strip()
-		
-		previousBox = ( -1, -1, -1, -1 ) #For detecting when two characters share a speech bubble; don't generate text twice.
 		
 		if len( line ) > 0:
 			line = line.split( "\t" )
@@ -404,19 +404,6 @@ for generatedComicNumber in range( numberOfComics ):
 			except:
 				print( "Error: Word bubble file", wordBubbleFileName, "does not list", character, "in its list of speakers.", file=sys.stderr )
 				exit( EX_DATAERR )
-			
-			text = ""
-			nodeList = generator.generateSentences( 1 )[ 0 ]
-			for node in nodeList:
-				text += node.word + " "
-			text.rstrip()
-			
-			oneCharacterTranscript = character + ": "
-			oneCharacterTranscript += stringFromNodes( nodeList )
-			if not silence:
-				print( oneCharacterTranscript )
-			oneCharacterTranscript += "\n"
-			transcript += oneCharacterTranscript
 		
 			topLeftX = int( line[ 1 ] )
 			topLeftY = int( line[ 2 ] )
@@ -425,8 +412,23 @@ for generatedComicNumber in range( numberOfComics ):
 		
 			box = ( topLeftX, topLeftY, bottomRightX, bottomRightY )
 			
+			print( "box:", box, "pbox:", previousBox )
+			
 			if box != previousBox:
 				previousBox = box
+				
+				text = ""
+				nodeList = generator.generateSentences( 1 )[ 0 ]
+				for node in nodeList:
+					text += node.word + " "
+				text.rstrip()
+			
+				oneCharacterTranscript = character + ": "
+				oneCharacterTranscript += stringFromNodes( nodeList )
+				if not silence:
+					print( oneCharacterTranscript )
+				oneCharacterTranscript += "\n"
+				transcript += oneCharacterTranscript
 				
 				wordBubble = image.crop( box )
 				draw = ImageDraw.Draw( wordBubble )
