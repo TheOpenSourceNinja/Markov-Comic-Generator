@@ -13,13 +13,17 @@ For fun.
 * LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
 * README.md: This file
 * fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font. Some other fonts are linked to in the Fonts section below.
-* Nina fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
+* fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
 * images: The directory in which input images should go. Contains one sample image.
 * transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
 * word-bubbles: The directory in which definition files should go. Contains one sample file.
+* sources.tsv: An optional text file containing the locations at which original, unedited comics can be found. Contains the URL of the one sample image.
+
+## The Input Directory
+The input directory is the directory in which all input files must be located. It defaults to the current working directory but can be specified on the command line with the --indir option.
 
 ## Input file formats
-## Common
+### Common
 Comments - that is, notes in the input files that are intended to be ignored by the program - are preceded by "//". The // and everything coming after the // until the next line break will be ignored.
 
 Blank lines - either lines that are actually blank or that become blank after removal of comments - will be ignored.
@@ -37,8 +41,11 @@ Labels are not case-sensitive.
 
 All input files are either images (any common format is acceptable; PNG format is recommended) or text files. It is recommended that text files be encoded in UTF-8 and have Windows-style CR+LF newlines.
 
+### Sources
+The sources.tsv file, if it exists, must be located in the root of the input directory. Each line of the file must consist of one ID number, then a tab, then some text (preferably a URL) identifying where the original comic pertaining to that particular ID can be found.
+
 ### Dialog transcript files
-These transcript files should be in the transcripts/ folder. A transcript file's name should be its ID number followed by the ".txt" file extension.
+These transcript files should be in the transcripts/ folder inside the input directory. A transcript file's name should be its ID number followed by the ".txt" file extension.
 
 All the lines after the ID represent dialog or sound effects. These lines take the form of a character label, a colon, a space, and then whatever dialog the character speaks.
 
@@ -65,10 +72,10 @@ If in the original comic, a word is hyphenated in order to split it between two 
 	M: I'D RATHER BE *RICH!* //Note: For some reason Mimi and Eunice speak in all caps. See for yourself: http://mimiandeunice.com/2010/12/10/right-or-happy-iii/
 
 ### Image files
-Each image file should be in the images/ folder. Its name should be its ID number followed by an extension appropriate for the format. The image should have all dialog blanked out so that empty word balloons are left.
+Each image file should be in the images/ folder inside the input directory. Its name should be its ID number followed by an extension appropriate for the format. The image should have all dialog blanked out so that empty word balloons are left.
 
 ### Word bubble files
-Each word bubble file should be in the word-bubbles/ folder. Its name should consist of its ID number followed by ".tsv".
+Each word bubble file should be in the word-bubbles/ folder inside the input directory. Its name should consist of its ID number followed by ".tsv".
 
 The first non-blank line of each file should be a tab-separated list of labels of all the characters who speak.
 
@@ -89,7 +96,7 @@ If multiple characters use the same speech bubble (saying the same thing at the 
 The program will use the first usable font it finds, searching in the following order:
 
 1. A font file specified on the command line ("--font" on the command line)
-1. All font files in the "fonts" subdirectory of the input directory ("--indir" on the command line, defaults to the working directory if not specified)
+1. All font files in the "fonts" subdirectory of the input directory.
 1. [Nina](https://archive.org/details/NinaPaleyFonts)
 1. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
 1. [Tomson Talks](http://purl.org/net/2008,frankbruder/font/TomsonTalks)
