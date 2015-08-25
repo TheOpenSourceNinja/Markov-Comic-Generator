@@ -232,10 +232,11 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 							if style.lower() == "bold":
 								fontLoaded = True
 								fontFile = testFile.file
-						if not fontLoaded:
-							print( "This font is not bold." )
-						else:
-							print( "This font is bold." )
+						if not silence:
+							if not fontLoaded:
+								print( "This font is not bold." )
+							else:
+								print( "This font is bold." )
 					break
 			except ( IOError, OSError ):
 				pass
@@ -245,9 +246,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 			for family in families:
 				if fontLoaded:
 					break
-				print( "family:", family )
 				fontList = fontconfig.query( family=family )
-				print( "fontList:", fontList )
 				for testFileName in fontList:
 					if fontLoaded:
 						break
@@ -262,7 +261,8 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 							valid = True
 							break;
 					if valid:
-						print( "This font is bold." )
+						if not silence:
+							print( "This font is bold." )
 						try:
 							if not silence:
 								print( "Trying to load font", testFile.fullname, "from file", testFile.file )
@@ -563,7 +563,6 @@ for generatedComicNumber in range( numberOfComics ):
 			
 				offset = originalOffset
 				for line in newText:
-					print( line )
 					draw.text( ( margin, offset ), line, font=usedFont, fill=textColor )
 					offset += usedFont.getsize( line )[1]
 					if offset > bottomRightY - topLeftY and not silence:
