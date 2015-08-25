@@ -544,7 +544,10 @@ for generatedComicNumber in range( numberOfComics ):
 						bandMax = max( ImageStat.Stat( image ).extrema )
 				
 					for c in backgroundColor:
-						d = bandMax - c
+						d = bandMax - ( c * 1.5 )
+						
+						if d < 0:
+							d = 0
 					
 						if useIntegers:
 							d = int( d )
