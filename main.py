@@ -81,7 +81,7 @@ def findCharsPerLine( text, normalFont, maxWidth ):
 	
 	return charsPerLine
 
-def rewrap( nodeList, normalFont, maxWidth, center=True ):
+def rewrap( nodeList, normalFont, maxWidth, fontSize = 10, center=True ):
 	'''Rewrap and center text.
 		Args:
 			nodeList: A list of nodes containing the text to be wrapped.
@@ -96,10 +96,13 @@ def rewrap( nodeList, normalFont, maxWidth, center=True ):
 	italicNodes = dict()
 	underlinedNodes = dict()
 	for node in nodeList:
-		node.font = normalFont
 		boldNodes[ node ] = node.isBold()
 		italicNodes[ node ] = node.isItalic()
 		underlinedNodes[ node] = node.isUnderlined()
+		if boldNodes[ node ] or italicNodes[ node ]:
+			node.font = ImageFont.truetype( findSuitableFont(), size = fontSize )
+		else:
+			node.font = normalFont
 	
 	lineList = []
 	temp = []
@@ -438,7 +441,7 @@ for generatedComicNumber in range( numberOfComics ):
 				if height <= 0:
 					height = 1
 			
-				newText = rewrap( nodeList, normalFont, width )
+				newText = rewrap( nodeList, normalFont, width, fontSize = size )
 			
 				margin = 0
 				offset = originalOffset = 0
@@ -464,7 +467,7 @@ for generatedComicNumber in range( numberOfComics ):
 						except IOError as error:
 							print( error, "\nUsing default font instead.", file=sys.stderr )
 							usedFont = ImageFont.load_default()
-						newText = rewrap( nodeList, usedFont, width )
+						newText = rewrap( nodeList, usedFont, width, fontSize = size )
 		
 				midX = int( wordBubble.size[ 0 ] / 2 )
 				midY = int( wordBubble.size[ 1 ] / 2 )
