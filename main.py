@@ -81,7 +81,7 @@ def findCharsPerLine( text, normalFont, maxWidth ):
 	
 	return charsPerLine
 
-def rewrap( nodeList, normalFont, maxWidth, fontSize = 10, center=True ):
+def rewrap( nodeList, normalFont, boldFont, maxWidth, fontSize = 10, center=True ):
 	'''Rewrap and center text.
 		Args:
 			nodeList: A list of nodes containing the text to be wrapped.
@@ -99,8 +99,8 @@ def rewrap( nodeList, normalFont, maxWidth, fontSize = 10, center=True ):
 		boldNodes[ node ] = node.isBold()
 		italicNodes[ node ] = node.isItalic()
 		underlinedNodes[ node] = node.isUnderlined()
-		if boldNodes[ node ] or italicNodes[ node ]:
-			node.font = ImageFont.truetype( findSuitableFont(), size = fontSize )
+		if boldNodes[ node ]:
+			node.font = boldFont
 		else:
 			node.font = normalFont
 	
@@ -172,7 +172,7 @@ def rewrap( nodeList, normalFont, maxWidth, fontSize = 10, center=True ):
 	
 	return result
 
-def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None ):
+def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None, preferBold = False ):
 	fontLoaded = False
 	fontFile = None
 	
@@ -188,7 +188,22 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 		normalFont = ImageFont.truetype( commandLineFont, size=size )
 		fontFile = commandLineFont
 		fontLoaded = True
+		if preferBold:
+			testFile = fontconfig.FcFont( commandLineFont )
+			fontLoaded = False
+			for language, style in testFile.style:
+				if language.lower() == "en":
+					if style.lower() == "bold":
+						fontLoaded = True
+				#default
+				if style.lower() == "bold":
+					fontLoaded = True
+			if not fontLoaded:
+				print( "The command line font is not bold." )
 	except ( IOError, OSError ):
+		pass
+	
+	if not fontLoaded:
 		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
 			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
 		fileList = os.listdir( fontsDir )
@@ -204,6 +219,23 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 					normalFont = ImageFont.truetype( testFile.file, size=size )
 					fontLoaded = True
 					fontFile = testFile.file
+					if preferBold:
+						testFile = fontconfig.FcFont( fontFile )
+						fontLoaded = False
+						fontFile = None
+						for language, style in testFile.style:
+							if language.lower() == "en":
+								if style.lower() == "bold":
+									fontLoaded = True
+									fontFile = testFile.file
+							#default
+							if style.lower() == "bold":
+								fontLoaded = True
+								fontFile = testFile.file
+						if not fontLoaded:
+							print( "This font is not bold." )
+						else:
+							print( "This font is bold." )
 					break
 			except ( IOError, OSError ):
 				pass
@@ -213,21 +245,34 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 			for family in families:
 				if fontLoaded:
 					break
+				print( "family:", family )
 				fontList = fontconfig.query( family=family )
+				print( "fontList:", fontList )
 				for testFileName in fontList:
 					if fontLoaded:
 						break
 					testFile = fontconfig.FcFont( testFileName )
-					try:
-						if not silence:
-							print( "Trying to load font", testFile.fullname, "from file", testFile.file )
-						if charToCheck == None or testFile.has_char( charToCheck ):
-							normalFont = ImageFont.truetype( testFile.file, size=size )
-							fontLoaded = True
-							fontFile = testFile.file
-							break
-					except ( IOError, OSError ):
-						pass
+					valid = False
+					for language, style in testFile.style:
+						if language.lower() == "en":
+							if style.lower() == "bold":
+								valid = True
+								break
+						if style.lower() == "bold":
+							valid = True
+							break;
+					if valid:
+						print( "This font is bold." )
+						try:
+							if not silence:
+								print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+							if charToCheck == None or testFile.has_char( charToCheck ):
+								normalFont = ImageFont.truetype( testFile.file, size=size )
+								fontLoaded = True
+								fontFile = testFile.file
+								break
+						except ( IOError, OSError ):
+							pass
 			if not fontLoaded:
 				fontList = fontconfig.query() #Gets a list of all fonts
 				for testFileName in fontList:
@@ -324,7 +369,8 @@ wordBubblesDir = os.path.join( inDir, "word-bubbles" )
 fontsDir = os.path.join( inDir, "fonts" )
 imageDir = os.path.join( inDir, "images" )
 
-fontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont )
+normalFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont )
+boldFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont, preferBold = True )
 
 for generatedComicNumber in range( numberOfComics ):
 
@@ -389,7 +435,8 @@ for generatedComicNumber in range( numberOfComics ):
 
 	size = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
 	
-	normalFont = ImageFont.truetype( fontFile, size = size )
+	normalFont = ImageFont.truetype( normalFontFile, size = size )
+	boldFont = ImageFont.truetype( boldFontFile, size = size )
 	
 	transcript = str( comicID ) + "\n"
 	
@@ -441,13 +488,14 @@ for generatedComicNumber in range( numberOfComics ):
 				if height <= 0:
 					height = 1
 			
-				newText = rewrap( nodeList, normalFont, width, fontSize = size )
+				newText = rewrap( nodeList, normalFont, boldFont, width, fontSize = size )
 			
 				margin = 0
 				offset = originalOffset = 0
 				fontSize = size
 				goodSizeFound = False
 				usedFont = normalFont
+				usedBoldFont = boldFont
 				while not goodSizeFound:
 					offset = originalOffset
 					for line in newText:
@@ -463,11 +511,13 @@ for generatedComicNumber in range( numberOfComics ):
 					if not goodSizeFound:
 						fontSize -= 1
 						try:
-							usedFont = ImageFont.truetype( fontFile, size=fontSize )
+							usedFont = ImageFont.truetype( normalFontFile, size=fontSize )
+							usedBoldFont = ImageFont.truetype( boldFontFile, size=fontSize )
 						except IOError as error:
 							print( error, "\nUsing default font instead.", file=sys.stderr )
 							usedFont = ImageFont.load_default()
-						newText = rewrap( nodeList, usedFont, width, fontSize = size )
+							usedBoldFont = ImageFont.loa_default()
+						newText = rewrap( nodeList, usedFont, usedBoldFont, width, fontSize = size )
 		
 				midX = int( wordBubble.size[ 0 ] / 2 )
 				midY = int( wordBubble.size[ 1 ] / 2 )
@@ -513,6 +563,7 @@ for generatedComicNumber in range( numberOfComics ):
 			
 				offset = originalOffset
 				for line in newText:
+					print( line )
 					draw.text( ( margin, offset ), line, font=usedFont, fill=textColor )
 					offset += usedFont.getsize( line )[1]
 					if offset > bottomRightY - topLeftY and not silence:
