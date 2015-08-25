@@ -1,0 +1,6 @@
+110
+M: *"THOU* *SHALT* *NOT* *STEAL!"*
+L: ⌘C //Mac keyboard shortcut: U+2318 "Place of interest sign", a.k.a. "command key" and "operating system key", followed by capital letter C
+E: YOU KNOW WHO SAID THAT? *GOD.*
+L: ⌘P
+G: AND I'M *SUING* YOUR ASS FOR *COPYRIGHT* *INFRINGEMENT!*

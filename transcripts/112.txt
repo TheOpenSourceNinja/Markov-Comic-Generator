@@ -1,0 +1,4 @@
+112
+U: *GET* *A* *LIFE!*
+M: I *HAVE* A LIFE!
+M: A RICH, FULL *FANTASY* LIFE!
