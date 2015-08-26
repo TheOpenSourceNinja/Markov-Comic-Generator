@@ -25,6 +25,13 @@ class MarkovNode:
 		if not isBold and not isItalic and not isUnderlined:
 			self.addNormal()
 		
+		self.boldDecided = False #We only want to randomly decide boldness once
+		self.bold = False
+		self.italicDecided = False #We only want to randomly decide boldness once
+		self.italic = False
+		self.underlinedDecided = False #We only want to randomly decide boldness once
+		self.underlined = False
+		
 		self.word = word
 		self.font = font
 	
@@ -43,17 +50,29 @@ class MarkovNode:
 	def isBold( self ):
 		'''Determine randomly whether this node should be rendered as bold text.
 		'''
-		return self.randomBoolean( self.numBold / self.numTotal )
+		if not self.boldDecided:
+			self.bold = self.randomBoolean( self.numBold / self.numTotal )
+			self.boldDecided = True
+		
+		return self.bold
 	
 	def isItalic( self ):
 		'''Determine randomly whether this node should be rendered as italicized text.
 		'''
-		return self.randomBoolean( self.numItalic / self.numTotal )
+		if not self.italicDecided:
+			self.italic = self.randomBoolean( self.numItalic / self.numTotal )
+			self.italicDecided = True
+			
+		return self.italic
 	
 	def isUnderlined( self ):
 		'''Determine randomly whether this node should be rendered as underlined text.
 		'''
-		return self.randomBoolean( self.numUnderlined / self.numTotal )
+		if not self.underlinedDecided:
+			self.underlined = self.randomBoolean( self.numUnderlined / self.numTotal )
+			self.underlinedDecided = True
+		
+		return self.underlined
 	
 	def addNormal( self ):
 		'''Increment the total counter only.
