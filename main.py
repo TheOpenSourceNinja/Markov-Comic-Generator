@@ -200,7 +200,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 				#default
 				if style.lower() == "bold":
 					fontLoaded = True
-			if not fontLoaded:
+			if not fontLoaded and not silence:
 				print( "The command line font is not bold." )
 	except ( IOError, OSError ):
 		pass
