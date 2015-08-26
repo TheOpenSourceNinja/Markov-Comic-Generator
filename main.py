@@ -206,8 +206,6 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 		pass
 	
 	if not fontLoaded:
-		if len( commandLineFont ) > 0: #We don't want to give an error message if no font was specified
-			print( commandLineFont, "could not be loaded as a font.", file=sys.stderr )
 		fileList = os.listdir( fontsDir )
 		for testFileName in fileList:
 			testFileName = os.path.join( fontsDir, testFileName )
