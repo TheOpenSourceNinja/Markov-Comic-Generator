@@ -576,9 +576,11 @@ for generatedComicNumber in range( numberOfComics ):
 					xOffset = 0
 					yOffsetAdditional = 0
 					for node in line:
-						draw.text( ( margin + xOffset, offset ), node.word + " ", font = normalFont, fill = textColor )
-						xOffset += normalFont.getsize( node.word + " " )[ 0 ]
-						yOffsetAdditional = max( yOffsetAdditional, normalFont.getsize( node.word + " " )[ 1 ] )
+						usedFont = node.font
+						draw.text( ( margin + xOffset, offset ), node.word + " ", font = usedFont, fill = textColor )
+						tempSize = usedFont.getsize( node.word + " " )
+						xOffset += tempSize[ 0 ]
+						yOffsetAdditional = max( yOffsetAdditional, tempSize[ 1 ] )
 					offset += yOffsetAdditional
 					if offset > bottomRightY - topLeftY and not silence:
 						print( "Warning: Text is too big vertically.", file=sys.stderr )
