@@ -12,7 +12,7 @@ For fun.
 * main.py: The Python script responsible for everything else
 * LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
 * README.md: This file
-* fonts: The directory in which desired font(s) should be installed. Currently contains one variant of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font. Some other fonts are linked to in the Fonts section below.
+* fonts: The directory in which desired font(s) should be installed. Currently contains two variants (one bold and one non-bold) of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font. Some other fonts are linked to in the Fonts section below.
 * fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
 * images: The directory in which input images should go. Contains one sample image.
 * transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
@@ -53,7 +53,7 @@ Different panels or balloons go on different lines. This just makes for a cleane
 
 In the case of shared dialog (e.g. two or more characters say the same thing at the same time), a separate copy of the dialog should be given to each character on two consecutive lines.
 
-This program will strip asterisks, forward slashes, and underscores from around individual words. However, it is recommended for the purpose of accurate transcription that emphasis be added to words in the following ways:
+Emphasis can be added in the following ways:
 
 * \*asterisks\* surrounding a word represent bold text
 * /forward slashes/ surrounding a word represent italic text
@@ -61,12 +61,12 @@ This program will strip asterisks, forward slashes, and underscores from around 
 
 Word capitalization should be as it is in the original comic strip.
 
-If in the original comic, a word is hyphenated in order to split it between two lines of text, it is recommended that the word be kept on a single line in the transcript and the hyphen be replaced with a [soft hyphen](https://en.wikipedia.org/w/index.php?title=Soft_hyphen&oldid=625641896) (Unicode code point U+00AD). Soft hyphens are not normally visible in most text editors; they are used to mark a place where a visible hyphen can be automatically inserted if one is needed.
+If in the original comic, a word is hyphenated in order to split it between two lines of text, it is recommended that the word be kept on a single line in the transcript and the hyphen be replaced with a [soft hyphen](https://en.wikipedia.org/w/index.php?title=Soft_hyphen&oldid=625641896) (Unicode code point U+00AD). Soft hyphens are not normally visible in most text editors; they are used to mark a place where a line break, possibly with a visible hyphen, can be automatically inserted if one is needed.
 
 #### Example
 	//This first line will be blank after the comment gets removed, so it is ignored.
 	20101210 //Date serves as ID number
-	E: WOULD YOU RATHER BE *RIGHT,* OR *HAP­PY?* //Eunice is talking. Also, the last word has a soft hyphen in the middle.
+	E: WOULD YOU RATHER BE *RIGHT,* OR *HAP­PY?* //Eu­nice i­s talk­ing. Al­so, th­e la­st wo­rd ha­s a­ so­ft hy­phen i­n th­e mid­dle. A­s do­es ev­ery wo­rd i­n thi­s com­ment. Fo­r de­monstra­tion o­f wha­t so­ft hy­phens d­o, tr­y resiz­ing thi­s wind­ow; se­e h­ow thi­s com­ment ge­ts wrap­ped i­n compar­ison t­o th­e oth­ers whi­ch do­n't ha­ve so­ft hy­phens i­n ever­y wo­rd.
 	M: *NEITHER!*
 	//E: *NEITHER!* //If Mimi and Eunice both said this at the same time, we would uncomment this line.
 	M: I'D RATHER BE *RICH!* //Note: For some reason Mimi and Eunice speak in all caps. See for yourself: http://mimiandeunice.com/2010/12/10/right-or-happy-iii/
@@ -90,7 +90,7 @@ If multiple characters use the same speech bubble (saying the same thing at the 
 	E	37	6	180	69
 	M	280	48	370	76
 	//E	280	48	370	76 //If this comic had Eunice sharing a speech bubble with Mimi, we would uncomment this line.
-	M	488	30	586	82	00 //The 00 will be ignored by this program version. Later versions of this program might use it.
+	M	488	30	586	82	ABC //The ABC will be ignored by this program version. Later versions of this program might use it.
 
 ## Fonts
 The program will use the first usable font it finds, searching in the following order:
