@@ -31,6 +31,7 @@ saveForWeb = saveForWebDefault = False
 commentMark = commentMarkDefault = "//" #If in the future we decide to use a different mark for comments, this is the only line we'll need to change.
 commandLineFont = None #If a font file is specified on the command line, this will be set.
 topImageFileName = None
+randomizeCapitals = randomizeCapitalsDefault = False
 
 def stringFromNodes( nodeList, useFormatting = True ):
 	'''Given a list of nodes, put them all into a string.
@@ -167,7 +168,7 @@ def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10
 				numberOfSpaces = int( ( difference / spaceWidth ) // 2 )
 				#print( "numberOfSpaces:", numberOfSpaces )
 				for i in range( numberOfSpaces ):
-					line.insert( 0, MarkovNode( word="", font=normalFont ) ) #Spaces get inserted between nodes, so these nodes are blank
+					line.insert( 0, MarkovNode( word="", nonRandomizedWord="", font=normalFont ) ) #Spaces get inserted between nodes, so these nodes are blank
 				#line = spacesString + line
 		result.append( line )
 	
@@ -312,34 +313,37 @@ def usage():
 	print( "🞍 -h or --help: Display this usage info." )
 	print( "🞍 -f or --font: The path to a font file to use." )
 	print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
+	print( '🞍 -r or --randomize-capitals: Some comic fonts have alternate capital letter forms instead of lower-case letters. In that case, using random "upper-case" and "lower-case" letters actually results in all upper-case letters but with a somewhat more handwriting-like look. Defaults to', randomizeCapitalsDefault )
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=" ] )
+	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:r", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=", "randomize-capitals" ] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
 	sys.exit( EX_USAGE );
 
 for option in options:
-	if option[0] == "-s" or option[0] == "--silent":
+	if option[ 0 ] == "-s" or option[ 0 ] == "--silent":
 		silence = True
-	elif option[0] == "-i" or option[0] == "--indir":
-		inDir = option[1]
-	elif option[0] == "-o" or option[0] == "--outtextfile":
-		outTextFileName = option[1]
-	elif option[0] == "-p" or option[0] == "--outimagefile":
-		outImageFileName = option[1]
-	elif option[0] == "-n" or option[0] == "--number":
-		numberOfComics = int( option[1].strip( "=" ) )
-	elif option[0] == "-w" or option[0] == "--saveforweb":
+	elif option[ 0 ] == "-i" or option[ 0 ] == "--indir":
+		inDir = option[ 1 ]
+	elif option[ 0 ] == "-o" or option[ 0 ] == "--outtextfile":
+		outTextFileName = option[ 1 ]
+	elif option[ 0 ] == "-p" or option[ 0 ] == "--outimagefile":
+		outImageFileName = option[ 1 ]
+	elif option[ 0 ] == "-n" or option[ 0 ] == "--number":
+		numberOfComics = int( option[ 1 ].strip( "=" ) )
+	elif option[ 0 ] == "-w" or option[ 0 ] == "--saveforweb":
 		saveForWeb = True
-	elif option[0] == "-h" or option[0] == "--help":
+	elif option[ 0 ] == "-h" or option[ 0 ] == "--help":
 		usage()
 		sys.exit( EX_OK )
-	elif option[0] == "-f" or option[0] == "--font":
-		commandLineFont = option[1]
-	elif option[0] == "-t" or option[0] == "--top":
-		topImageFileName = option[1]
+	elif option[ 0 ] == "-f" or option[ 0 ] == "--font":
+		commandLineFont = option[ 1 ]
+	elif option[ 0 ] == "-t" or option[ 0 ] == "--top":
+		topImageFileName = option[ 1 ]
+	elif option[ 0 ] == "-r" or option[ 0 ] == "--randomize-capitals":
+		randomizeCapitals = True
 
 #Verify user input
 #commandLineFont is not verified here; it will be verified when loading the font.
@@ -419,7 +423,7 @@ for generatedComicNumber in range( numberOfComics ):
 
 	generators = dict()
 	for speaker in speakers:
-		newGenerator = Generator( charLabel = speaker, cm = commentMark )
+		newGenerator = Generator( charLabel = speaker, cm = commentMark, randomizeCapitals = randomizeCapitals )
 		newGenerator.buildGraph( inDir )
 		generators[ speaker ] = newGenerator
 

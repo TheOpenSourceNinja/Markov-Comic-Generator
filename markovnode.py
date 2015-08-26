@@ -3,10 +3,16 @@
 import random
 
 class MarkovNode:
-	def __init__( self, word, isEnd = False, isBold = False, isItalic = False, isUnderlined = False, font = None ):
+	def __init__( self, word, nonRandomizedWord, isEnd = False, isBold = False, isItalic = False, isUnderlined = False, font = None ):
 		'''Initialize. Duh.
 			Args:
+				word: The word this node represents. May or may not have randomized capitalization.
+				nonRandomizedWord: The non-randomized version of the word.
 				isEnd: A Boolean indicating whether this node is the end of a sentence.
+				isBold: Whether this node, newly created, represents a bold word (after the node is created, this status can be affected by calling addBold() or addNormal() )
+				isItalic: Whether this node, newly created, represents an italic word (after the node is created, this status can be affected by calling addItalic() or addNormal() )
+				isUnderlined: Whether this node, newly created, represents an underlined word (after the node is created, this status can be affected by calling addUnderlined() or addNormal() )
+				font: The PIL ImageFont associated with this node.
 		'''
 		self.links = []
 		self.isEnd = isEnd
@@ -33,12 +39,13 @@ class MarkovNode:
 		self.underlined = False
 		
 		self.word = word
+		self.nonRandomizedWord = nonRandomizedWord
 		self.font = font
 	
-	def randomBoolean( self, probability ):
+	def randomBoolean( self, probability = 0.5 ):
 		'''Get a random true or false value, with the given probability of being true.
 			Args:
-				probability: a number between 0.0 and 1.0 inclusive.
+				probability: a number between 0.0 and 1.0 inclusive. Defaults to 0.5.
 			Returns:
 				A Boolean.
 		'''

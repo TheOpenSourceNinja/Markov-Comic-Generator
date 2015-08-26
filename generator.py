@@ -7,15 +7,29 @@ from idchecker import idChecker
 from markovnode import MarkovNode
 
 class Generator:
-	def __init__( self, charLabel, cm = "//" ):
+	def __init__( self, charLabel, cm = "//", randomizeCapitals = False ):
 		'''Just does what the name implies.
 			Args:
 				charLabel: A string naming which comic character this generator represents.
 				cm: A string used to mark the beginning of comments. Including it here ensures that this object will use the same kind of comment marker as the rest of the program. Defaults to "//".
+				randomizeCapitals: Whether to randomize the capitalization of each letter.
 		'''
 		self.charLabel = charLabel.upper()
 		self.lines = []
 		self.commentMark = cm
+		self.randomizeCapitals = randomizeCapitals
+	
+	def randomBoolean( self, probability = 0.5 ):
+		'''Get a random true or false value, with the given probability of being true.
+			Args:
+				probability: a number between 0.0 and 1.0 inclusive. Defaults to 0.5.
+			Returns:
+				A Boolean.
+		'''
+		if probability < 0 or probability > 1:
+			raise ValueError( "probability must be between 0 and 1 inclusive" )
+		
+		return( random.random() <= probability )
 	
 	def buildGraph( self, inDir ):
 		'''Build the Markov graph for this generator's comic character.
@@ -58,7 +72,17 @@ class Generator:
 							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
 			
 							if word not in self.nodes.keys():
-								self.nodes[ word ] = MarkovNode( word, isEnd )
+								wordRandomized = ""
+								if self.randomizeCapitals:
+									for letter in word:
+										if self.randomBoolean():
+											letter = letter.upper()
+										else:
+											letter = letter.lower()
+										wordRandomized += letter
+								else:
+									wordRandomized = word
+								self.nodes[ word ] = MarkovNode( wordRandomized, word, isEnd )
 								
 							if not previousWord == None:
 								if self.nodes[ previousWord ].isEnd:
@@ -93,7 +117,7 @@ class Generator:
 			currentWord = random.choice( self.sentenceStarts )
 			sentence = [ self.nodes[ currentWord ] ]
 			while self.nodes[ currentWord ].hasLinks() and not self.nodes[ currentWord ].isEnd:
-				currentWord = self.nodes[ currentWord ].getRandomLinkedNode().word
+				currentWord = self.nodes[ currentWord ].getRandomLinkedNode().nonRandomizedWord
 				#sentence += " " + currentWord
 				sentence.append( self.nodes[ currentWord ] )
 			
