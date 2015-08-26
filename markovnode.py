@@ -42,6 +42,13 @@ class MarkovNode:
 		self.nonRandomizedWord = nonRandomizedWord
 		self.font = font
 	
+	def unselectStyle( self ):
+		'''Set boldDecided, italicDecided, and underlinedDecided to False.
+		'''
+		self.boldDecided = False
+		self.italicDecided = False
+		self.underlinedDecided = False
+	
 	def randomBoolean( self, probability = 0.5 ):
 		'''Get a random true or false value, with the given probability of being true.
 			Args:

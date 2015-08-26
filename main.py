@@ -671,6 +671,7 @@ for generatedComicNumber in range( numberOfComics ):
 						tempSize = usedFont.getsize( node.word + " " )
 						xOffset += tempSize[ 0 ]
 						yOffsetAdditional = max( yOffsetAdditional, tempSize[ 1 ] )
+						node.unselectStyle()
 					offset += yOffsetAdditional
 					if offset > bottomRightY - topLeftY and not silence:
 						print( "Warning: Text is too big vertically.", file=sys.stderr )
