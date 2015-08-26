@@ -81,15 +81,17 @@ def findCharsPerLine( text, normalFont, maxWidth ):
 	
 	return charsPerLine
 
-def rewrap( nodeList, normalFont, boldFont, maxWidth, fontSize = 10, center=True ):
+def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10, center=True ):
 	'''Rewrap and center text.
 		Args:
 			nodeList: A list of nodes containing the text to be wrapped.
-			normalFont: Gets passed to findCharsPerLine().
-			maxWidth: Gets passed to findCharsPerLine().
+			normalFont: A non-bold font.
+			boldFont: A bold font.
+			maxWidth: The maximum width in pixels.
+			fontSize: Ignored.
 			center: A Boolean indicating whether text should be centered after wrapping. Spaces will be added around each line of text if true. Defaults to True.
 		Returns:
-			A list of strings.
+			A list of lists of nodes.
 	'''
 	
 	boldNodes = dict()
@@ -149,26 +151,25 @@ def rewrap( nodeList, normalFont, boldFont, maxWidth, fontSize = 10, center=True
 		temp2.append( line )
 	
 	result = []
-	if center:
-		for line in temp2:
-			lineWidth = 0 #normalFont.getsize( line )[ 0 ]
-			
-			for node in line:
-				lineWidth += normalFont.getsize( " " )[ 0 ] + node.font.getsize( node.word )[ 0 ]
-			
-			lineWidth -= normalFont.getsize( " " )[ 0 ]
-			
-			if lineWidth < maxWidth:
-				difference = maxWidth - lineWidth
-				spaceWidth = normalFont.getsize( " " )[ 0 ]
-				if spaceWidth > 0 and spaceWidth < difference:
-					difference = difference - spaceWidth
-					numberOfSpaces = int( ( difference / spaceWidth ) // 2 )
-					#print( "numberOfSpaces:", numberOfSpaces )
-					for i in range( numberOfSpaces ):
-						line.insert( 0, MarkovNode( word="", font=normalFont ) ) #Spaces get inserted between nodes, so these nodes are blank
-					#line = spacesString + line
-			result.append( stringFromNodes( line, useFormatting = False ) )
+	for line in temp2:
+		lineWidth = 0 #normalFont.getsize( line )[ 0 ]
+		
+		for node in line:
+			lineWidth += normalFont.getsize( " " )[ 0 ] + node.font.getsize( node.word )[ 0 ]
+		
+		lineWidth -= normalFont.getsize( " " )[ 0 ]
+		
+		if center and lineWidth < maxWidth:
+			difference = maxWidth - lineWidth
+			spaceWidth = normalFont.getsize( " " )[ 0 ]
+			if spaceWidth > 0 and spaceWidth < difference:
+				difference = difference - spaceWidth
+				numberOfSpaces = int( ( difference / spaceWidth ) // 2 )
+				#print( "numberOfSpaces:", numberOfSpaces )
+				for i in range( numberOfSpaces ):
+					line.insert( 0, MarkovNode( word="", font=normalFont ) ) #Spaces get inserted between nodes, so these nodes are blank
+				#line = spacesString + line
+		result.append( line )
 	
 	return result
 
@@ -432,11 +433,6 @@ for generatedComicNumber in range( numberOfComics ):
 	except IOError as error:
 		print( error, file=sys.stderr )
 		exit( EX_NOINPUT )
-
-	size = image.size[1] // 2 #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. Assume here that we want one line of text to fill half the height of the image; we will try smaller and smaller sizes later.
-	
-	normalFont = ImageFont.truetype( normalFontFile, size = size )
-	boldFont = ImageFont.truetype( boldFontFile, size = size )
 	
 	transcript = str( comicID ) + "\n"
 	
@@ -487,37 +483,47 @@ for generatedComicNumber in range( numberOfComics ):
 				height = bottomRightY - topLeftY
 				if height <= 0:
 					height = 1
-			
-				newText = rewrap( nodeList, normalFont, boldFont, width, fontSize = size )
-			
+				
+				size = int( height * 1.2 ) #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. We will try smaller and smaller sizes in the while loop below. The 1.2, used to account for the fact that real character sizes aren't exactly the same as the requested size, I just guessed an appropriate value.
+	
+				normalFont = ImageFont.truetype( normalFontFile, size = size )
+				boldFont = ImageFont.truetype( boldFontFile, size = size )
+				
+				listoflists = rewrap_nodelistlist( nodeList, normalFont, boldFont, width, fontSize = size )
+				
 				margin = 0
 				offset = originalOffset = 0
-				fontSize = size
 				goodSizeFound = False
-				usedFont = normalFont
-				usedBoldFont = boldFont
+				
 				while not goodSizeFound:
-					offset = originalOffset
-					for line in newText:
-						offset += usedFont.getsize( line )[1]
-					if offset > height:
+					goodSizeFound = True
+					totalHeight = 0
+					for line in listoflists:
+						
+						lineWidth = 0
+						lineHeight = 0
+						for node in line:
+							wordSize = normalFont.getsize( node.word + " " )
+							lineWidth += wordSize[ 0 ]
+							lineHeight = max( lineHeight, wordSize[ 1 ] )
+						lineWidth -= normalFont.getsize( " " )[ 0 ]
+						totalHeight += lineHeight
+						if lineWidth > width:
+							goodSizeFound = False
+					
+					if totalHeight > height:
 						goodSizeFound = False
-					else:
-						goodSizeFound = True
-						for newTextLine in newText:
-							if usedFont.getsize( newTextLine )[ 0 ] > width:
-								goodSizeFound = False
-								break
+					
 					if not goodSizeFound:
-						fontSize -= 1
+						size -= 1
 						try:
-							usedFont = ImageFont.truetype( normalFontFile, size=fontSize )
-							usedBoldFont = ImageFont.truetype( boldFontFile, size=fontSize )
+							normalFont = ImageFont.truetype( normalFontFile, size = size )
+							boldFont = ImageFont.truetype( boldFontFile, size = size )
 						except IOError as error:
 							print( error, "\nUsing default font instead.", file=sys.stderr )
-							usedFont = ImageFont.load_default()
-							usedBoldFont = ImageFont.loa_default()
-						newText = rewrap( nodeList, usedFont, usedBoldFont, width, fontSize = size )
+							normalFont = ImageFont.load_default()
+							boldFont = ImageFont.loa_default()
+						listoflists = rewrap_nodelistlist( nodeList, normalFont, boldFont, width, fontSize = size )
 		
 				midX = int( wordBubble.size[ 0 ] / 2 )
 				midY = int( wordBubble.size[ 1 ] / 2 )
@@ -563,14 +569,20 @@ for generatedComicNumber in range( numberOfComics ):
 				
 				except ValueError:
 					textColor = "black"
-			
+				
+				########################################################################################################################################
 				offset = originalOffset
-				for line in newText:
-					draw.text( ( margin, offset ), line, font=usedFont, fill=textColor )
-					offset += usedFont.getsize( line )[1]
+				for line in listoflists:
+					xOffset = 0
+					yOffsetAdditional = 0
+					for node in line:
+						draw.text( ( margin + xOffset, offset ), node.word + " ", font = normalFont, fill = textColor )
+						xOffset += normalFont.getsize( node.word + " " )[ 0 ]
+						yOffsetAdditional = max( yOffsetAdditional, normalFont.getsize( node.word + " " )[ 1 ] )
+					offset += yOffsetAdditional
 					if offset > bottomRightY - topLeftY and not silence:
 						print( "Warning: Text is too big vertically.", file=sys.stderr )
-		
+					
 				image.paste( wordBubble, box )
 		
 	wordBubbleFile.close()
