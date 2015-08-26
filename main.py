@@ -174,7 +174,7 @@ def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10
 	
 	return result
 
-def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None, preferBold = False ):
+def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None, preferBold = False, preferNormal = True ):
 	fontLoaded = False
 	fontFile = None
 	
@@ -202,6 +202,18 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 					fontLoaded = True
 			if not fontLoaded and not silence:
 				print( "The command line font is not bold." )
+		elif preferNormal:
+			testFile = fontconfig.FcFont( commandLineFont )
+			fontLoaded = False
+			for language, style in testFile.style:
+				if language.lower() == "en":
+					if style.lower() == "medium" or style.lower() == "regular":
+						fontLoaded = True
+				#default
+				if style.lower() == "medium" or style.lower() == "regular":
+					fontLoaded = True
+			if not fontLoaded and not silence:
+				print( "The command line font is not normal." )
 	except ( IOError, OSError ):
 		pass
 	
@@ -237,6 +249,24 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 								print( "This font is not bold." )
 							else:
 								print( "This font is bold." )
+					elif preferNormal:
+						testFile = fontconfig.FcFont( fontFile )
+						fontLoaded = False
+						fontFile = None
+						for language, style in testFile.style:
+							if language.lower() == "en":
+								if style.lower() == "medium" or style.lower() == "regular":
+									fontLoaded = True
+									fontFile = testFile.file
+							#default
+							if style.lower() == "medium" or style.lower() == "regular":
+								fontLoaded = True
+								fontFile = testFile.file
+						if not silence:
+							if not fontLoaded:
+								print( "This font is not normal." )
+							else:
+								print( "This font is normal." )
 					break
 			except ( IOError, OSError ):
 				pass
@@ -252,47 +282,105 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 						break
 					testFile = fontconfig.FcFont( testFileName )
 					valid = False
-					for language, style in testFile.style:
-						if language.lower() == "en":
+					if preferBold:
+						for language, style in testFile.style:
+							if language.lower() == "en":
+								if style.lower() == "bold":
+									valid = True
+									break
 							if style.lower() == "bold":
 								valid = True
-								break
-						if style.lower() == "bold":
-							valid = True
-							break;
-					if valid:
-						if not silence:
-							print( "This font is bold." )
-						try:
+								break;
+						if valid:
 							if not silence:
-								print( "Trying to load font", testFile.fullname, "from file", testFile.file )
-							if charToCheck == None or testFile.has_char( charToCheck ):
-								normalFont = ImageFont.truetype( testFile.file, size=size )
-								fontLoaded = True
-								fontFile = testFile.file
-								break
-						except ( IOError, OSError ):
-							pass
+								print( "This font is bold." )
+							try:
+								if not silence:
+									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+								if charToCheck == None or testFile.has_char( charToCheck ):
+									normalFont = ImageFont.truetype( testFile.file, size=size )
+									fontLoaded = True
+									fontFile = testFile.file
+									break
+							except ( IOError, OSError ):
+								pass
+					elif preferNormal:
+						for language, style in testFile.style:
+							if language.lower() == "en":
+								if style.lower() == "medium" or style.lower() == "regular":
+									valid = True
+									break
+							if style.lower() == "medium" or style.lower() == "regular":
+								valid = True
+								break;
+						if valid:
+							if not silence:
+								print( "This font is normal." )
+							try:
+								if not silence:
+									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+								if charToCheck == None or testFile.has_char( charToCheck ):
+									normalFont = ImageFont.truetype( testFile.file, size=size )
+									fontLoaded = True
+									fontFile = testFile.file
+									break
+							except ( IOError, OSError ):
+								pass
 			if not fontLoaded:
 				fontList = fontconfig.query() #Gets a list of all fonts
 				for testFileName in fontList:
 					if fontLoaded:
 						break
 					testFile = fontconfig.FcFont( testFileName )
-					try:
-						if not silence:
-							print( "Trying to load font", testFile.fullname, "from file", testFile.file )
-						if charToCheck == None or testFile.has_char( charToCheck ):
-							normalFont = ImageFont.truetype( testFile.file, size=size )
-							fontLoaded = True
-							fontFile = testFile.file
-							break
-					except ( IOError, OSError ):
-						pass
+					valid = False
+					if preferBold:
+						for language, style in testFile.style:
+							if language.lower() == "en":
+								if style.lower() == "bold":
+									valid = True
+									break
+							if style.lower() == "bold":
+								valid = True
+								break;
+						if valid:
+							if not silence:
+								print( "This font is bold." )
+							try:
+								if not silence:
+									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+								if charToCheck == None or testFile.has_char( charToCheck ):
+									normalFont = ImageFont.truetype( testFile.file, size=size )
+									fontLoaded = True
+									fontFile = testFile.file
+									break
+							except ( IOError, OSError ):
+								pass
+					elif preferNormal:
+						for language, style in testFile.style:
+							if language.lower() == "en":
+								if style.lower() == "medium" or style.lower() == "regular":
+									valid = True
+									break
+							if style.lower() == "medium" or style.lower() == "regular":
+								valid = True
+								break;
+						if valid:
+							if not silence:
+								print( "This font is normal." )
+							try:
+								if not silence:
+									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
+								if charToCheck == None or testFile.has_char( charToCheck ):
+									normalFont = ImageFont.truetype( testFile.file, size=size )
+									fontLoaded = True
+									fontFile = testFile.file
+									break
+							except ( IOError, OSError ):
+								pass
 				if not fontLoaded:
 					#This should only be reachable if the system has absolutely no fonts
 					if not silence:
-						print( "No usable fonts found. Using default normalFont." )
+						print( "No usable fonts found. Using default font." )
 					normalFont = ImageFont.load_default()
 					fontFile = None
 	return fontFile
@@ -372,8 +460,8 @@ wordBubblesDir = os.path.join( inDir, "word-bubbles" )
 fontsDir = os.path.join( inDir, "fonts" )
 imageDir = os.path.join( inDir, "images" )
 
-normalFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont )
-boldFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont, preferBold = True )
+normalFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont, preferBold = False, preferNormal = True )
+boldFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont, preferBold = True, preferNormal = False )
 
 for generatedComicNumber in range( numberOfComics ):
 
