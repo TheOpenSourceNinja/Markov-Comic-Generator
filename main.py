@@ -174,12 +174,16 @@ def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10
 	
 	return result
 
+
+
 def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None, preferBold = False, preferNormal = True ):
 	fontLoaded = False
 	fontFile = None
 	
 	if not silence:
 		print( "fontsDir is", fontsDir, "and commandLineFont is", commandLineFont )
+		if preferBold:
+			print( "Looking for a BOLD font." )
 	
 	if commandLineFont is None:
 		commandLineFont = ""
@@ -232,7 +236,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 					fontLoaded = True
 					fontFile = testFile.file
 					if preferBold:
-						testFile = fontconfig.FcFont( fontFile )
+						#testFile = fontconfig.FcFont( fontFile )
 						fontLoaded = False
 						fontFile = None
 						for language, style in testFile.style:
@@ -267,7 +271,8 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 								print( "This font is not normal." )
 							else:
 								print( "This font is normal." )
-					break
+					if fontLoaded:
+						break
 			except ( IOError, OSError ):
 				pass
 		
