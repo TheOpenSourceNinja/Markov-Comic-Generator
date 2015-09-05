@@ -1,9 +1,9 @@
 021
-E	SFX//	L
+E	SFX}}	L
 E	34	30	770	294
 SFX	1156	152	1360	248
 E	1572	26	2004	296
-//Commenting out the following lines because my Markov Comic Generator software would not know to generate the same book title for each frame
-//L	122	420	324	700
-//L	898	404	1070	680
-//L	1724	402	1914	666
+}}Commenting out the following lines because my Markov Comic Generator software would not know to generate the same book title for each frame
+}}L	122	420	324	700
+}}L	898	404	1070	680
+}}L	1724	402	1914	666

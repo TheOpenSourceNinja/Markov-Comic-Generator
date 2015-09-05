@@ -1,5 +1,5 @@
 191
-//Decided to take sentences that were originally spread over multiple word bubbles and write them here as if they were not. Thus the repetition.
+}}Decided to take sentences that were originally spread over multiple word bubbles and write them here as if they were not. Thus the repetition.
 M: MY HELMET MAKES ME FEEL *SAFE* IN A SCARY WORLD.
 E: MY RELIGION MAKES ME FEEL *SAFE* IN A SCARY WORLD.
 M: EVEN THOUGH THERE'S NO *PROOF* THAT HELMETS REDUCE INJURY
