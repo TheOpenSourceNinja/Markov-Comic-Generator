@@ -11,6 +11,7 @@ from PIL.PngImagePlugin import PngInfo
 from generator import Generator
 from idchecker import idChecker
 from markovnode import MarkovNode
+from uploader import WordPressUploader, DrupalUploader
 
 #Exit statuses
 #These are copied from my /usr/include/sysexits.h. Only statuses possibly relevant to this program were copied.
@@ -28,10 +29,15 @@ outTextFileName = outTextFileNameDefault = "default out.txt"
 outImageFileName = outImageFileNameDefault = "default out.png"
 numberOfComics = numberOfComicsDefault = 1
 saveForWeb = saveForWebDefault = False
-commentMark = commentMarkDefault = "//" #If in the future we decide to use a different mark for comments, this is the only line we'll need to change.
+commentMark = commentMarkDefault = "}}" #If in the future we decide to use a different mark for comments, this is the only line we'll need to change.
 commandLineFont = None #If a font file is specified on the command line, this will be set.
 topImageFileName = None
 randomizeCapitals = randomizeCapitalsDefault = False
+WordPressURI = WordPressURIDefault = None
+loginName = loginNameDefault = None
+loginPassword = loginPasswordDefault = None
+shortName = shortNameDefault = None
+longName = None #longName's default is not specified here
 
 def stringFromNodes( nodeList, useFormatting = True ):
 	'''Given a list of nodes, put them all into a string.
@@ -405,9 +411,14 @@ def usage():
 	print( "🞍 -f or --font: The path to a font file to use." )
 	print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
 	print( '🞍 -r or --randomize-capitals: Some comic fonts have alternate capital letter forms instead of lower-case letters. In that case, using random "upper-case" and "lower-case" letters actually results in all upper-case letters but with a somewhat more handwriting-like look. Defaults to', randomizeCapitalsDefault )
+	print( "🞍 -u or --WordPress-uri: The URI of a WordPress blog's xmlrpc.php file. Specify this if you want the comic automatically uploaded as a blog post. Defaults to", WordPressURIDefault )
+	print( "🞍 -l or --login-name: a username to log in to WordPress with. Only applicable in combination with --login-password and --WordPress-uri. Defaults to", loginNameDefault )
+	print( "🞍-a or --login-password: a password to log in to WordPress with. Only applicable in combination with --login-name and --WordPress-uri. Defaults to", loginPasswordDefault )
+	print( "🞍-c or --short-name: The comic's name, short form. Used when uploading to blogs. Defaults to", shortNameDefault )
+	print( "🞍-b or --long-name: The comic's name, long form. Used when uploading to blogs. Defaults to the short form." )
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:r", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=", "randomize-capitals" ] )
+	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:ru:l:a:c:b:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=", "randomize-capitals", "WordPress-uri=", "login-name=", "login-password=", "short-name=", "long-name=" ] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
@@ -435,6 +446,19 @@ for option in options:
 		topImageFileName = option[ 1 ]
 	elif option[ 0 ] == "-r" or option[ 0 ] == "--randomize-capitals":
 		randomizeCapitals = True
+	elif option[ 0 ] == "-u" or option[ 0 ] == "--WordPress-uri":
+		WordPressURI = option[ 1 ]
+	elif option[ 0 ] == "-l" or option[ 0 ] == "--login-name":
+		loginName = option[ 1 ]
+	elif option[ 0 ] == "-a" or option[ 0 ] == "--login-password":
+		loginPassword = option[ 1 ]
+	elif option[ 0 ] == "-c" or option[ 0 ] == "--short-name":
+		shortName = option[ 1 ]
+	elif option[ 0 ] == "-b" or option[ 0 ] == "--long-name":
+		longName = option[ 1 ]
+
+if longName is None:
+	longName = shortName
 
 #Verify user input
 #commandLineFont is not verified here; it will be verified when loading the font.
@@ -467,6 +491,10 @@ imageDir = os.path.join( inDir, "images" )
 
 normalFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont, preferBold = False, preferNormal = True )
 boldFontFile = findSuitableFont( fontsDir = fontsDir, commandLineFont = commandLineFont, preferBold = True, preferNormal = False )
+
+blogUploaders = []
+if WordPressURI is not None:
+	blogUploaders.append( WordPressUploader( WordPressURI, loginName, loginPassword ) )
 
 for generatedComicNumber in range( numberOfComics ):
 
@@ -665,7 +693,6 @@ for generatedComicNumber in range( numberOfComics ):
 				except ValueError:
 					textColor = "black"
 				
-				########################################################################################################################################
 				offset = originalOffset
 				for line in listoflists:
 					xOffset = 0
@@ -751,6 +778,22 @@ for generatedComicNumber in range( numberOfComics ):
 	except IOError as error:
 		print( error, file=sys.stderr )
 		exit( EX_CANTCREAT )
+	
+	originalURL = None
+	URLFile = open( os.path.join( inDir, "sources.tsv" ), "rt" )
+	for line in URLFile:
+		line = line.partition( commentMark )[ 0 ].strip()
+		
+		if len( line ) > 0:
+			line = line.split( "\t" )
+			
+			if comicID == line[ 0 ]:
+				originalURL = line[ 1 ]
+				break;
+	URLFile.close()
+	
+	for blog in blogUploaders:
+		blog.upload( inputFileName = outImageFileName, shortComicTitle = shortName, longComicTitle = longName, transcript = transcript, originalURL = originalURL, silence = silence )
 	
 	if numberOfComics > 1:
 		outImageFileName = oldOutImageFileName

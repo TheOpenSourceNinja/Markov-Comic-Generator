@@ -8,7 +8,8 @@ import mimetypes
 
 class Uploader:
 	def __init__( self ):
-		self.blah = 0
+		'''Do any initialization stuff common to all derived classes.'''
+		#nothing to do so far
 	
 	def upload( self ):
 		'''Do stuff common to all derived classes upload() functions. This function does not itself upload anything.'''
@@ -21,11 +22,11 @@ class DrupalUploader( Uploader ):
 	def upload( self ):
 		self.blah = 0
 
-class WordpressUploader( Uploader ):
+class WordPressUploader( Uploader ):
 	def __init__( self, uri, username, password, blogID = None ):
 		'''Connect to the server.
 			Relevant WordPress docs:
-				https://codex.wordpress.org/XML-RPC_WordPress_API/Users#wp.getUsersBlogs
+				https://codex.WordPress.org/XML-RPC_WordPress_API/Users#wp.getUsersBlogs
 			Args:
 				uri: The URI to connect to with XMLRPC. This should be the xmlrpc.php file in your WordPress install directory, e.g. https://www.example.com/xmlrpc.php . SECURITY WARNING: If this URI does not use encryption (e.g. starting with httpS), then USERNAMES and PASSWORDS will be transmitted in CLEARTEXT!
 				username: The username under which these posts are made.
@@ -36,7 +37,7 @@ class WordpressUploader( Uploader ):
 		
 		self.uri = str( uri )
 		
-		if not self.uri.beginswith( "https://" ):
+		if not self.uri.startswith( "https://" ):
 			print( "SECURITY WARNING: URI does not begin with https. USERNAMES and PASSWORDS are being transmitted in CLEARTEXT!", "\nThis is the URI:", uri, file = stderr )
 		
 		self.username = str( username )
@@ -44,7 +45,7 @@ class WordpressUploader( Uploader ):
 		
 		self.server = client.ServerProxy( self.uri )
 		try:
-			blogInfo = server.wp.getUsersBlogs( self.username, self.password )
+			blogInfo = self.server.wp.getUsersBlogs( self.username, self.password )
 		except client.Fault as fault:
 			print( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
 			print( "Fault string: %s" % fault.faultString, file = stderr )
@@ -71,18 +72,18 @@ class WordpressUploader( Uploader ):
 		
 		for blog in blogInfo:
 			if self.blogID == blog[ "blogid" ]:
-				if self.uri != blogInfo[ "xmlrpc" ]:
-					self.uri = blogInfo[ "xmlrpc" ]
+				if self.uri != blog[ "xmlrpc" ]:
+					self.uri = blog[ "xmlrpc" ]
 					self.server = client.ServerProxy( self.uri )
 	
-	def upload( self, inputFilename = "default out.png", shortComicTitle = "", longComicTitle = None, postCategories = None, postTime = datetime.now(), postStatus = "draft", transcript = None, originalURL = None, silence = False ):
+	def upload( self, inputFileName = "default out.png", shortComicTitle = "", longComicTitle = None, postCategories = None, postTime = datetime.now(), postStatus = "draft", transcript = None, originalURL = None, silence = False ):
 		'''Upload the comic (must be a readable file) as a blog post.
 			Relevant WordPress docs:
-				https://codex.wordpress.org/XML-RPC_WordPress_API/Posts#wp.newPost
-				https://codex.wordpress.org/Function_Reference/wp_insert_post
-				https://codex.wordpress.org/XML-RPC_WordPress_API/Media#wp.uploadFile
+				https://codex.WordPress.org/XML-RPC_WordPress_API/Posts#wp.newPost
+				https://codex.WordPress.org/Function_Reference/wp_insert_post
+				https://codex.WordPress.org/XML-RPC_WordPress_API/Media#wp.uploadFile
 			Args:
-				inputFilename: The name of the image file to upload. Defaults to "default out.png"
+				inputFileName: The name of the image file to upload. Defaults to "default out.png"
 				shortComicTitle: The title of the comic, in short form. Will be the first part of the image file's name as uploaded to the server (the local copy will not be renamed). Defaults to the empty string.
 				longComicTitle: The title of the comic, in long form. Will be the first part of the post's title. Defaults to whatever shortComicTitle is.
 				postCategories: A list of strings, each string representing a post category. Defaults to one string, longComicTitle.
@@ -97,7 +98,7 @@ class WordpressUploader( Uploader ):
 				WordPress-provided fault codes if a fault (e.g. invalid username/password) occurs.
 				Server-provided error codes if a protocol error (i.e. 404: file not found) occurs.
 				-1 if some other type of error occurs.'''
-		inputFilename = str( inputFilename )
+		inputFileName = str( inputFileName )
 		shortComicTitle = str( shortComicTitle )
 		postStatus = str( postStatus )
 		
@@ -110,14 +111,14 @@ class WordpressUploader( Uploader ):
 			postCategories = [ longComicTitle ]
 		
 		post = dict()
-		dateString = dateTime.date( postTime ).isoformat()
-		post[ "post_title" ] = longComicTitle + dateString
+		dateString = datetime.date( postTime ).isoformat()
+		post[ "post_title" ] = longComicTitle + " " + dateString
 		post[ "post_date" ] = client.DateTime( postTime ) #WordPress post dates include time of day
 		post[ "post_status" ] = postStatus
 		post[ "post_category" ] = postCategories #WordPress expects an array of categories despite using the singular term "category"
 		
 		fileData = dict()
-		fileData[ "name" ] = shortComicTitle + " " + dateString + path.splitext( inputFilename )[ 1 ]
+		fileData[ "name" ] = shortComicTitle + " " + dateString + path.splitext( inputFileName )[ 1 ]
 		
 		fileType = mimetypes.guess_type( inputFileName )
 		if fileType[ 0 ] is None:
@@ -134,20 +135,20 @@ class WordpressUploader( Uploader ):
 			transcript = ""
 			for line in transcriptFileHandle:
 				transcript += line
-		
+			transcriptFileHandle.close()
 		try:
-			fileUploadResult = server.wp.uploadFile( blogID, username, password, fileData )
+			fileUploadResult = self.server.wp.uploadFile( self.blogID, self.username, self.password, fileData )
 			
 			if not silence:
 				print( "File upload result:", fileUploadResult )
 			
-			post[ "post_content" ] = '<a href="' + fileUploadResult[ "url" ] + '"><img class="aligncenter size-full img-zoomable wp-image-' + fileUploadResult[ "id" ] + '" src="' + fileUploadResult[ "url" ] + '" alt="' + transcript + '" /></a><p>Transcript:</p><p>' + transcript + '</p>'
+			post[ "post_content" ] = '<a href="' + fileUploadResult[ "url" ] + '"><img class="aligncenter size-full img-zoomable wp-image-' + fileUploadResult[ "id" ] + '" src="' + fileUploadResult[ "url" ] + '" alt="' + transcript + '" /></a><p>Transcript:</p><p class="comic-transcript">' + transcript + '</p>'
 			
 			if originalURL is not None:
 				originalURL = str( originalURL )
-				post[ "post_content" ] = post[ "post_content" ] + '<p><a href="' + originalURL + '">Original</a></p>'
+				post[ "post_content" ] = post[ "post_content" ] + '<p class="comic-original-url"><a href="' + originalURL + '">Original</a></p>'
 			
-			postUploadResult = server.wp.newPost( blogID, username, password, postContent )
+			postUploadResult = self.server.wp.newPost( self.blogID, self.username, self.password, post )
 			
 			if not silence:
 				print( "Post upload result:", postUploadResult )
