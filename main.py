@@ -793,7 +793,7 @@ for generatedComicNumber in range( numberOfComics ):
 	URLFile.close()
 	
 	for blog in blogUploaders:
-		blog.upload( inputFileName = outImageFileName, shortComicTitle = shortName, longComicTitle = longName, transcript = transcript, originalURL = originalURL, silence = silence )
+		blog.upload( postStatus = "publish", inputFileName = outImageFileName, shortComicTitle = shortName, longComicTitle = longName, transcript = transcript, originalURL = originalURL, silence = silence )
 	
 	if numberOfComics > 1:
 		outImageFileName = oldOutImageFileName

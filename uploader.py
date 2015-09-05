@@ -115,7 +115,9 @@ class WordPressUploader( Uploader ):
 		post[ "post_title" ] = longComicTitle + " " + dateString
 		post[ "post_date" ] = client.DateTime( postTime ) #WordPress post dates include time of day
 		post[ "post_status" ] = postStatus
-		post[ "post_category" ] = postCategories #WordPress expects an array of categories despite using the singular term "category"
+		
+		post[ "terms_names" ] = dict()
+		post[ "terms_names" ][ "category" ] = postCategories
 		
 		fileData = dict()
 		fileData[ "name" ] = shortComicTitle + " " + dateString + path.splitext( inputFileName )[ 1 ]
