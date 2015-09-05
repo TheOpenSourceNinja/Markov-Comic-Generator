@@ -24,7 +24,7 @@ The input directory is the directory in which all input files must be located. I
 
 ## Input file formats
 ### Common
-Comments - that is, notes in the input files that are intended to be ignored by the program - are preceded by "//". The // and everything coming after the // until the next line break will be ignored.
+Comments - that is, notes in the input files that are intended to be ignored by the program - are preceded by "}}". The }} and everything coming after until the next line break will be ignored.
 
 Blank lines - either lines that are actually blank or that become blank after removal of comments - will be ignored.
 
