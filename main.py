@@ -75,12 +75,12 @@ def findCharsPerLine( text, normalFont, maxWidth ):
 	if maxWidth < 1:
 		maxWidth = 1
 	
-	charsPerLine = maxWidth // normalFont.getsize( "L" )[0]
+	charsPerLine = maxWidth // normalFont.getsize( "L" )[ 0 ] #Capital L is generaly a pretty wide character
 	
 	if charsPerLine < 1:
 		charsPerLine = 1
 	
-	while normalFont.getsize( text[ :charsPerLine ] )[0] > maxWidth:
+	while normalFont.getsize( text[ :charsPerLine ] )[ 0 ] > maxWidth:
 		charsPerLine -= 1
 	
 	if charsPerLine < 1:
@@ -116,7 +116,6 @@ def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10
 	lineList = []
 	temp = []
 	for node in nodeList:
-		#print( "number:", number, "node:", node )
 		lineWidth = normalFont.getsize( stringFromNodes( lineList ) )[ 0 ]
 		wordWidth = node.font.getsize( node.word )[ 0 ]
 		if lineWidth + wordWidth <= maxWidth:
@@ -172,7 +171,6 @@ def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10
 			if spaceWidth > 0 and spaceWidth < difference:
 				difference = difference - spaceWidth
 				numberOfSpaces = int( ( difference / spaceWidth ) // 2 )
-				#print( "numberOfSpaces:", numberOfSpaces )
 				for i in range( numberOfSpaces ):
 					line.insert( 0, MarkovNode( word="", nonRandomizedWord="", font=normalFont ) ) #Spaces get inserted between nodes, so these nodes are blank
 				#line = spacesString + line
@@ -182,22 +180,25 @@ def rewrap_nodelistlist( nodeList, normalFont, boldFont, maxWidth, fontSize = 10
 
 
 
-def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, commandLineFont = None, preferBold = False, preferNormal = True ):
+def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = None, preferBold = False, preferNormal = True ):
+	'''Find a font that fits the given requirements.
+		Args:
+			fontsDir: A string representing a path to directory in which to search for fonts. If no suitable font is found here, the fontconfig library will be used to search other directories. Defaults to "fonts".
+			charToCheck: A string containing one or more characters, all of which must be present in a font for that font to be considered suitable. Defaults to None.
+			commandLineFont: A string representing the path to the first font which will be checked for suitability.
+			preferBold: A Boolean indicating whether bold fonts will be preferred over non-bold.
+			preferNormal: A Boolean indicating whether fonts of the style "medium", "regular", or "normal" will be preferred.
+		Returns:
+			A string representing a path to a suitable font file, or None if none could be found.
+		'''
 	fontLoaded = False
 	fontFile = None
-	
-	if not silence:
-		print( "fontsDir is", fontsDir, "and commandLineFont is", commandLineFont )
-		if preferBold:
-			print( "Looking for a BOLD font." )
 	
 	if commandLineFont is None:
 		commandLineFont = ""
 	
 	try:
-		if not silence:
-			print( "Trying to load font from file", commandLineFont )
-		normalFont = ImageFont.truetype( commandLineFont, size=size )
+		normalFont = ImageFont.truetype( commandLineFont )#, size=size )
 		fontFile = commandLineFont
 		fontLoaded = True
 		if preferBold:
@@ -205,25 +206,21 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 			fontLoaded = False
 			for language, style in testFile.style:
 				if language.lower() == "en":
-					if style.lower() == "bold":
+					if style.lower() == "bold": #Do other languages use English names for styles?
 						fontLoaded = True
 				#default
 				if style.lower() == "bold":
 					fontLoaded = True
-			if not fontLoaded and not silence:
-				print( "The command line font is not bold." )
 		elif preferNormal:
 			testFile = fontconfig.FcFont( commandLineFont )
 			fontLoaded = False
 			for language, style in testFile.style:
 				if language.lower() == "en":
-					if style.lower() == "medium" or style.lower() == "regular":
+					if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 						fontLoaded = True
 				#default
-				if style.lower() == "medium" or style.lower() == "regular":
+				if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 					fontLoaded = True
-			if not fontLoaded and not silence:
-				print( "The command line font is not normal." )
 	except ( IOError, OSError ):
 		pass
 	
@@ -231,14 +228,10 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 		fileList = os.listdir( fontsDir )
 		for testFileName in fileList:
 			testFileName = os.path.join( fontsDir, testFileName )
-			if not silence:
-				print( "Trying to load font from file", testFileName )
 			try:
 				testFile = fontconfig.FcFont( testFileName )
-				if not silence:
-					print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 				if charToCheck == None or testFile.has_char( charToCheck ):
-					normalFont = ImageFont.truetype( testFile.file, size=size )
+					normalFont = ImageFont.truetype( testFile.file )#, size=size )
 					fontLoaded = True
 					fontFile = testFile.file
 					if preferBold:
@@ -254,36 +247,26 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 							if style.lower() == "bold":
 								fontLoaded = True
 								fontFile = testFile.file
-						if not silence:
-							if not fontLoaded:
-								print( "This font is not bold." )
-							else:
-								print( "This font is bold." )
 					elif preferNormal:
 						testFile = fontconfig.FcFont( fontFile )
 						fontLoaded = False
 						fontFile = None
 						for language, style in testFile.style:
 							if language.lower() == "en":
-								if style.lower() == "medium" or style.lower() == "regular":
+								if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 									fontLoaded = True
 									fontFile = testFile.file
 							#default
-							if style.lower() == "medium" or style.lower() == "regular":
+							if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 								fontLoaded = True
 								fontFile = testFile.file
-						if not silence:
-							if not fontLoaded:
-								print( "This font is not normal." )
-							else:
-								print( "This font is normal." )
 					if fontLoaded:
 						break
 			except ( IOError, OSError ):
 				pass
 		
 		if not fontLoaded:
-			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ]
+			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ] #There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
 			for family in families:
 				if fontLoaded:
 					break
@@ -303,11 +286,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 								valid = True
 								break;
 						if valid:
-							if not silence:
-								print( "This font is bold." )
 							try:
-								if not silence:
-									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 								if charToCheck == None or testFile.has_char( charToCheck ):
 									normalFont = ImageFont.truetype( testFile.file, size=size )
 									fontLoaded = True
@@ -318,18 +297,14 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 					elif preferNormal:
 						for language, style in testFile.style:
 							if language.lower() == "en":
-								if style.lower() == "medium" or style.lower() == "regular":
+								if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 									valid = True
 									break
-							if style.lower() == "medium" or style.lower() == "regular":
+							if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 								valid = True
 								break;
 						if valid:
-							if not silence:
-								print( "This font is normal." )
 							try:
-								if not silence:
-									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 								if charToCheck == None or testFile.has_char( charToCheck ):
 									normalFont = ImageFont.truetype( testFile.file, size=size )
 									fontLoaded = True
@@ -338,7 +313,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 							except ( IOError, OSError ):
 								pass
 			if not fontLoaded:
-				fontList = fontconfig.query() #Gets a list of all fonts
+				fontList = fontconfig.query() #Gets a list of all fonts in system font directories
 				for testFileName in fontList:
 					if fontLoaded:
 						break
@@ -354,11 +329,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 								valid = True
 								break;
 						if valid:
-							if not silence:
-								print( "This font is bold." )
 							try:
-								if not silence:
-									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 								if charToCheck == None or testFile.has_char( charToCheck ):
 									normalFont = ImageFont.truetype( testFile.file, size=size )
 									fontLoaded = True
@@ -369,18 +340,14 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, size = 10, command
 					elif preferNormal:
 						for language, style in testFile.style:
 							if language.lower() == "en":
-								if style.lower() == "medium" or style.lower() == "regular":
+								if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 									valid = True
 									break
-							if style.lower() == "medium" or style.lower() == "regular":
+							if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
 								valid = True
 								break;
 						if valid:
-							if not silence:
-								print( "This font is normal." )
 							try:
-								if not silence:
-									print( "Trying to load font", testFile.fullname, "from file", testFile.file )
 								if charToCheck == None or testFile.has_char( charToCheck ):
 									normalFont = ImageFont.truetype( testFile.file, size=size )
 									fontLoaded = True
@@ -411,11 +378,24 @@ def usage():
 	print( "🞍 -f or --font: The path to a font file to use." )
 	print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
 	print( '🞍 -r or --randomize-capitals: Some comic fonts have alternate capital letter forms instead of lower-case letters. In that case, using random "upper-case" and "lower-case" letters actually results in all upper-case letters but with a somewhat more handwriting-like look. Defaults to', randomizeCapitalsDefault )
-	print( "🞍 -u or --WordPress-uri: The URI of a WordPress blog's xmlrpc.php file. Specify this if you want the comic automatically uploaded as a blog post. Defaults to", WordPressURIDefault )
+	print( "🞍 -u or --WordPress-uri: The URI of a WordPress blog's xmlrpc.php file. Specify this if you want the comic automatically uploaded as a blog post. Will probably require that --login-name and --login-password be specified too (this is up to WordPress, not us). Defaults to", WordPressURIDefault )
 	print( "🞍 -l or --login-name: a username to log in to WordPress with. Only applicable in combination with --login-password and --WordPress-uri. Defaults to", loginNameDefault )
 	print( "🞍-a or --login-password: a password to log in to WordPress with. Only applicable in combination with --login-name and --WordPress-uri. Defaults to", loginPasswordDefault )
 	print( "🞍-c or --short-name: The comic's name, short form. Used when uploading to blogs. Defaults to", shortNameDefault )
 	print( "🞍-b or --long-name: The comic's name, long form. Used when uploading to blogs. Defaults to the short form." )
+
+
+def isWritable( fileName ):
+	'''Tests whether a given file can be opened for writing.
+		Args:
+			fileName: A string representing the path to the file to be tested.
+		Returns:
+			True if file is writable, False otherwise
+	'''
+	
+	return os.access( fileName, os.W_OK )
+
+
 
 try:
 	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:ru:l:a:c:b:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=", "randomize-capitals", "WordPress-uri=", "login-name=", "login-password=", "short-name=", "long-name=" ] )
@@ -465,22 +445,37 @@ if longName is None:
 if not os.path.isdir( inDir ):
 	print( "Error:", inDir, "is not a directory.", file=sys.stderr )
 	exit( EX_NOINPUT )
-if os.path.exists( outTextFileName ) and not os.path.isfile( outTextFileName ):
+elif os.path.exists( outTextFileName ) and not os.path.isfile( outTextFileName ):
 	print( "Error:", outTextFileName, "is not a file.", file=sys.stderr )
 	exit( EX_CANTCREAT )
-if os.path.exists( outImageFileName ) and not os.path.isfile( outImageFileName ):
+elif not isWritable( outTextFileName ):
+	print( "Error:", outTextFileName, "is not writable.", file=sys.stderr )
+	exit( EX_CANTCREAT )
+elif os.path.exists( outImageFileName ) and not os.path.isfile( outImageFileName ):
 	print( "Error:", outImageFileName, "is not a file.", file=sys.stderr )
 	exit( EX_CANTCREAT )
-if numberOfComics < 1:
+elif not isWritable( outImageFileName ):
+	print( "Error:", outImageFileName, "is not writable.", file = sys.stderr )
+	exit( EX_CANTCREAT )
+elif numberOfComics < 1:
 	print( "Error: Number of comics (", numberOfComics, ") is less than 1.", file=sys.stderr )
 	exit( EX_USAGE )
-if topImageFileName != None:
+elif topImageFileName != None:
 	if not os.path.exists( topImageFileName ):
 		print( "Error:", topImageFileName, "does not exist.", file=sys.stderr )
 		exit( EX_NOINPUT )
 	elif not os.path.isfile( topImageFileName ):
 		print( "Error:", topImageFileName, "is not a file.", file=sys.stderr )
 		exit( EX_NOINPUT )
+	elif not os.access( topImageFileName, os.R_OK ):
+		print( "Error:", topImageFileName, "is not readable (permission error - did you mess up a chmod?)", file = sys.stderr )
+		exit( EX_NOPERM )
+elif loginName is not None and len( loginName ) < 1:
+	print( "Error: loginName has length zero." )
+	exit( EX_USAGE )
+elif loginPassword is not None and len( loginPassword ) < 1:
+	print( "Error: loginPassword has length zero." )
+	exit( EX_USAGE )
 
 if not silence:
 	print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
@@ -705,8 +700,6 @@ for generatedComicNumber in range( numberOfComics ):
 						yOffsetAdditional = max( yOffsetAdditional, tempSize[ 1 ] )
 						node.unselectStyle()
 					offset += yOffsetAdditional
-					if offset > bottomRightY - topLeftY and not silence:
-						print( "Warning: Text is too big vertically.", file=sys.stderr )
 					
 				image.paste( wordBubble, box )
 		
@@ -718,6 +711,7 @@ for generatedComicNumber in range( numberOfComics ):
 		outTextFileName = temp[0] + str( generatedComicNumber ) + temp[1]
 	
 	try:
+		#os.makedirs( os.path.dirname( outTextFileName ), exist_ok = True )
 		outFile = open( file=outTextFileName, mode="wt" )
 	except OSError as error:
 		print( error, "\nUsing standard output instead", file=sys.stderr )
@@ -770,13 +764,17 @@ for generatedComicNumber in range( numberOfComics ):
 	infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
 	
 	try:
+		#os.makedirs( os.path.dirname( outImageFileName ), exist_ok = True )
 		if saveForWeb:
 			image = image.convert( mode = "P", palette="WEB", dither=False ) #"ADAPTIVE" palette might look better for some images. Also try turning dithering on or off.
 			image.save( outImageFileName, format="PNG", optimize=True, pnginfo=infoToSave )
 		else:
 			image.save( outImageFileName, format="PNG", pnginfo=infoToSave )
 	except IOError as error:
-		print( error, file=sys.stderr )
+		print( error, file = sys.stderr )
+		exit( EX_CANTCREAT )
+	except OSError as error:
+		print( error, file = sys.stderr )
 		exit( EX_CANTCREAT )
 	
 	originalURL = None

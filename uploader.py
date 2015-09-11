@@ -5,6 +5,7 @@ from sys import stderr
 from datetime import datetime
 from os import path
 import mimetypes
+from urllib.parse import urlparse
 
 class Uploader:
 	def __init__( self ):
@@ -12,7 +13,7 @@ class Uploader:
 		#nothing to do so far
 	
 	def upload( self ):
-		'''Do stuff common to all derived classes upload() functions. This function does not itself upload anything.'''
+		'''Do stuff common to all derived classes' upload() functions. This function does not itself upload anything.'''
 		self.blah = 0
 
 class DrupalUploader( Uploader ):
@@ -37,8 +38,9 @@ class WordPressUploader( Uploader ):
 		
 		self.uri = str( uri )
 		
-		if not self.uri.startswith( "https://" ):
-			print( "SECURITY WARNING: URI does not begin with https. USERNAMES and PASSWORDS are being transmitted in CLEARTEXT!", "\nThis is the URI:", uri, file = stderr )
+		#if not self.uri.startswith( "https://" ):
+		if urlparse( self.uri ).scheme not in [ "file", "https", "sftp", "shttp", "sips", "snews", "svn+ssh" ]:
+			print( "SECURITY WARNING: URI does not use any known secure protocol. USERNAMES and PASSWORDS are being transmitted in CLEARTEXT!", "\nThis is the URI:", uri, file = stderr )
 		
 		self.username = str( username )
 		self.password = str( password )
@@ -46,7 +48,7 @@ class WordPressUploader( Uploader ):
 		self.server = client.ServerProxy( self.uri )
 		try:
 			blogInfo = self.server.wp.getUsersBlogs( self.username, self.password )
-		except client.Fault as fault:
+		except client.Fault as fault: #How is a fault different from an error? Beats me.
 			print( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
 			print( "Fault string: %s" % fault.faultString, file = stderr )
 			return
@@ -77,7 +79,7 @@ class WordPressUploader( Uploader ):
 					self.server = client.ServerProxy( self.uri )
 	
 	def upload( self, inputFileName = "default out.png", shortComicTitle = "", longComicTitle = None, postCategories = None, postTime = datetime.now(), postStatus = "draft", transcript = None, originalURL = None, silence = False ):
-		'''Upload the comic (must be a readable file) as a blog post.
+		'''Upload the comic (must be a readable image file) as a blog post.
 			Relevant WordPress docs:
 				https://codex.WordPress.org/XML-RPC_WordPress_API/Posts#wp.newPost
 				https://codex.WordPress.org/Function_Reference/wp_insert_post
