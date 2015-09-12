@@ -392,9 +392,16 @@ def isWritable( fileName ):
 		Returns:
 			True if file is writable, False otherwise
 	'''
-	
-	return os.access( fileName, os.W_OK )
-
+	if os.access( fileName, os.F_OK ): #file exists
+		return os.access( fileName, os.W_OK )
+	else: #file doesn't exist
+		try:
+			open( fileName, "w" )
+		except OSError:
+			return False
+		else:
+			os.remove( fileName )
+			return True
 
 
 try:
