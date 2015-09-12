@@ -537,6 +537,8 @@ for generatedComicNumber in range( numberOfComics ):
 
 	generators = dict()
 	for speaker in speakers:
+		if not silence:
+			print( "Now building a Markov graph for character", speaker, "..." )
 		newGenerator = Generator( charLabel = speaker, cm = commentMark, randomizeCapitals = randomizeCapitals )
 		newGenerator.buildGraph( inDir )
 		generators[ speaker ] = newGenerator
@@ -789,6 +791,9 @@ for generatedComicNumber in range( numberOfComics ):
 				originalURL = line[ 1 ]
 				break;
 	URLFile.close()
+	
+	if not silence:
+		print( "Original comic URL:", originalURL )
 	
 	for blog in blogUploaders:
 		blog.upload( postStatus = "publish", inputFileName = outImageFileName, shortComicTitle = shortName, longComicTitle = longName, transcript = transcript, originalURL = originalURL, silence = silence )
