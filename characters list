@@ -12,3 +12,4 @@ D: Death. The Grim Reaper. First appearance in comic #94, "Death!" (http://mimia
 K: Karl Marx. First appearance in comic #144, "Marximalism" (http://mimiandeunice.com/2010/08/02/marximalism/)
 B: Frédéric Bastiat. First appearance in comic #144, "Marximalism" (http://mimiandeunice.com/2010/08/02/marximalism/)
 G: God. Capital-G God. Jehovah, Yahweh, Jesus' daddy. First appearance in comic #110, "Thou Shalt Not Steal" (http://mimiandeunice.com/2010/08/06/thou-shalt-not-steal/)
+NOBODY: Nobody. I used the full word in case of typos of M. For use only when a comic has no words at all. First use in comic #287, "Bees In Their Bonnets" (http://mimiandeunice.com/2011/01/14/bees-in-their-bonnets/). This "character"'s word bubble(s) must have coordinates -1 -1 -1 -1, and the dialog in the transcript file must contain at least one word.
