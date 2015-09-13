@@ -4,6 +4,19 @@ class idChecker:
 	def __init__( self ):
 		'''Do nothing'''
 	
+	def checkString( self, potentialID ):
+		'''Check whether a given string is a valid ID number.
+			Args:
+				potentialID: A string which might be an ID number.
+			Returns:
+				True if potentialID is a valid ID, False otherwise.'''
+		#The only requirement at this time is that ID numbers be integers.
+		try:
+			potentialID = int( potentialID )
+			return True
+		except ValueError:
+			return False
+	
 	def checkFile( self, theFile, theFileName, commentMark ):
 		'''Check whether a file has a valid ID number in its name and first non-blank-after-comment-removal line.
 			Args:
@@ -24,7 +37,7 @@ class idChecker:
 				line = line.partition( commentMark )[ 0 ].strip() #Filter out comments
 				if len( line ) > 0:
 					keepLookingForID = False
-					if line.isnumeric() and line == path.splitext( path.basename( theFileName ) )[ 0 ]: #Why enforce the file name requirement? It's about people, not code: it's to make sure transcribers have read all available documentation (README.md) about the transcription format.
+					if self.checkString( line ) and line == path.splitext( path.basename( theFileName ) )[ 0 ]: #Why enforce the file name requirement? It's about people, not code: it's to make sure transcribers have read all available documentation (README.md) about the transcription format.
 						IDFound = True
 					break
 				else: #If line is blank after removal of comments, ignore it.

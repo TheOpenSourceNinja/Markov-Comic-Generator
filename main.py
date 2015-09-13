@@ -13,6 +13,8 @@ from idchecker import idChecker
 from markovnode import MarkovNode
 from uploader import WordPressUploader, DrupalUploader
 
+idChecker = idChecker()
+
 #Exit statuses
 #These are copied from my /usr/include/sysexits.h. Only statuses possibly relevant to this program were copied.
 EX_OK = 0 #No problems
@@ -38,6 +40,7 @@ loginName = loginNameDefault = None
 loginPassword = loginPasswordDefault = None
 shortName = shortNameDefault = None
 longName = None #longName's default is not specified here
+commandLineComicID = None
 
 def stringFromNodes( nodeList, useFormatting = True ):
 	'''Given a list of nodes, put them all into a string.
@@ -368,21 +371,23 @@ def usage():
 	'''
 	print( "😕" ) #In case of transcoding errors: this should be U+1F615, "confused face"
 	print( "Usage: The program takes the following command line arguments:" )
-	print( "🞍 -s or --silent: Prevents output on standard out. Defaults to", silenceDefault ) #the first character of each of these should be U+1F78D, "black slightly small square"
+	 #the first character of each of these should be U+1F78D, "black slightly small square":
+	print( "🞍-a or --login-password: a password to log in to WordPress with. Only applicable in combination with --login-name and --WordPress-uri. Defaults to", loginPasswordDefault )
+	print( "🞍-b or --long-name: The comic's name, long form. Used when uploading to blogs. Defaults to the short form." )
+	print( "🞍-c or --comic-id: The ID number of a specific comic image to use. Useful for debugging. Defaults to a randomly selected ID." )
+	print( "🞍-d or --short-name: The comic's name, short form. Used when uploading to blogs. Defaults to", shortNameDefault )
+	print( "🞍 -f or --font: The path to a font file to use." )
+	print( "🞍 -h or --help: Display this usage info." )
 	print( "🞍 -i or --indir: The directory in which to look for inputs (must have fonts/, images/, transcripts/, and word-bubbles/ subdirectories). Defaults to", inDirDefault )
+	print( "🞍 -l or --login-name: a username to log in to WordPress with. Only applicable in combination with --login-password and --WordPress-uri. Defaults to", loginNameDefault )
+	print( "🞍 -n or --number: The number of comics to generate. Defaults to", numberOfComicsDefault )
 	print( "🞍 -o or --outtextfile: The name of a text file to save the resulting sentences to. Defaults to", outTextFileNameDefault )
 	print( "🞍 -p or --outimagefile: The name of an image file to save the resulting comic to. Numbers will be appended if multiple comics are generated. Defaults to", outImageFileNameDefault )
-	print( "🞍 -n or --number: The number of comics to generate. Defaults to", numberOfComicsDefault )
-	print( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
-	print( "🞍 -h or --help: Display this usage info." )
-	print( "🞍 -f or --font: The path to a font file to use." )
-	print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
 	print( '🞍 -r or --randomize-capitals: Some comic fonts have alternate capital letter forms instead of lower-case letters. In that case, using random "upper-case" and "lower-case" letters actually results in all upper-case letters but with a somewhat more handwriting-like look. Defaults to', randomizeCapitalsDefault )
+	print( "🞍 -s or --silent: Prevents output on standard out. Defaults to", silenceDefault )
+	print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
 	print( "🞍 -u or --WordPress-uri: The URI of a WordPress blog's xmlrpc.php file. Specify this if you want the comic automatically uploaded as a blog post. Will probably require that --login-name and --login-password be specified too (this is up to WordPress, not us). Defaults to", WordPressURIDefault )
-	print( "🞍 -l or --login-name: a username to log in to WordPress with. Only applicable in combination with --login-password and --WordPress-uri. Defaults to", loginNameDefault )
-	print( "🞍-a or --login-password: a password to log in to WordPress with. Only applicable in combination with --login-name and --WordPress-uri. Defaults to", loginPasswordDefault )
-	print( "🞍-c or --short-name: The comic's name, short form. Used when uploading to blogs. Defaults to", shortNameDefault )
-	print( "🞍-b or --long-name: The comic's name, long form. Used when uploading to blogs. Defaults to the short form." )
+	print( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
 
 
 def isWritable( fileName ):
@@ -405,7 +410,7 @@ def isWritable( fileName ):
 
 
 try:
-	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:ru:l:a:c:b:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=", "randomize-capitals", "WordPress-uri=", "login-name=", "login-password=", "short-name=", "long-name=" ] )
+	options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhi:o:p:n:f:t:ru:l:a:c:b:d:", [ "silent", "saveforweb", "help", "indir=", "outtextfile=", "outimagefile=", "number=", "font=", "top=", "randomize-capitals", "WordPress-uri=", "login-name=", "login-password=", "comic-id=", "long-name=", "short-name=" ] )
 except getopt.GetoptError as error:
 	print( error )
 	usage()
@@ -421,7 +426,7 @@ for option in options:
 	elif option[ 0 ] == "-p" or option[ 0 ] == "--outimagefile":
 		outImageFileName = option[ 1 ]
 	elif option[ 0 ] == "-n" or option[ 0 ] == "--number":
-		numberOfComics = int( option[ 1 ].strip( "=" ) )
+		numberOfComics = int( option[ 1 ] )
 	elif option[ 0 ] == "-w" or option[ 0 ] == "--saveforweb":
 		saveForWeb = True
 	elif option[ 0 ] == "-h" or option[ 0 ] == "--help":
@@ -439,10 +444,12 @@ for option in options:
 		loginName = option[ 1 ]
 	elif option[ 0 ] == "-a" or option[ 0 ] == "--login-password":
 		loginPassword = option[ 1 ]
-	elif option[ 0 ] == "-c" or option[ 0 ] == "--short-name":
+	elif option[ 0 ] == "-d" or option[ 0 ] == "--short-name":
 		shortName = option[ 1 ]
 	elif option[ 0 ] == "-b" or option[ 0 ] == "--long-name":
 		longName = option[ 1 ]
+	elif option[ 0 ] == "-c" or option[ 0 ] == "--comic-id":
+		commandLineComicID = option[ 1 ]
 
 if longName is None:
 	longName = shortName
@@ -483,6 +490,9 @@ elif loginName is not None and len( loginName ) < 1:
 elif loginPassword is not None and len( loginPassword ) < 1:
 	print( "Error: loginPassword has length zero." )
 	exit( EX_USAGE )
+elif not idChecker.checkString( commandLineComicID ):
+	print( "Error:", commandLineComicID, "is not a valid comic ID" )
+	exit( EX_USAGE )
 
 if not silence:
 	print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
@@ -501,23 +511,30 @@ if WordPressURI is not None:
 for generatedComicNumber in range( numberOfComics ):
 
 	try:
-		wordBubbleFileName = random.choice( os.listdir( wordBubblesDir ) )
+		if commandLineComicID is None:
+			wordBubbleFileName = random.choice( os.listdir( wordBubblesDir ) )
+		else:
+			wordBubbleFileName = os.path.join( wordBubblesDir, commandLineComicID + ".tsv" )
 	except IndexError as error:
 		print( error, file=sys.stderr )
 		exit( EX_NOINPUT )
-
-	comicID = os.path.splitext( wordBubbleFileName )[0]
+	
+	print( "wordBubbleFileName:", wordBubbleFileName )
+	
+	if commandLineComicID is None:
+		comicID = os.path.splitext( wordBubbleFileName )[ 0 ]
+	else:
+		comicID = commandLineComicID
 	wordBubbleFileName = os.path.join( wordBubblesDir, wordBubbleFileName )
 	if not silence:
 		print( "Loading word bubbles from", wordBubbleFileName )
 
 	try:
 		wordBubbleFile = open( file=wordBubbleFileName, mode="rt" )
-	except OSError as erro:
+	except OSError as error:
 		print( error, file=sys.stderr )
 		exit( EX_NOINPUT )
 	
-	idChecker = idChecker()
 	if not idChecker.checkFile( wordBubbleFile, wordBubbleFileName, commentMark ):
 		print( "Error: Word bubble file", wordBubbleFileName, "is not in the correct format." )
 		exit( EX_DATAERR )
