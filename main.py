@@ -490,7 +490,7 @@ elif loginName is not None and len( loginName ) < 1:
 elif loginPassword is not None and len( loginPassword ) < 1:
 	print( "Error: loginPassword has length zero." )
 	exit( EX_USAGE )
-elif not idChecker.checkString( commandLineComicID ):
+elif ( commandLineComicID is not None ) and not idChecker.checkString( commandLineComicID ):
 	print( "Error:", commandLineComicID, "is not a valid comic ID" )
 	exit( EX_USAGE )
 

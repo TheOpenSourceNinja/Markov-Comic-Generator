@@ -11,11 +11,14 @@ class idChecker:
 			Returns:
 				True if potentialID is a valid ID, False otherwise.'''
 		#The only requirement at this time is that ID numbers be integers.
-		try:
-			potentialID = int( potentialID )
-			return True
-		except ValueError:
+		if potentialID is None:
 			return False
+		else:
+			try:
+				potentialID = int( potentialID )
+				return True
+			except ValueError:
+				return False
 	
 	def checkFile( self, theFile, theFileName, commentMark ):
 		'''Check whether a file has a valid ID number in its name and first non-blank-after-comment-removal line.
