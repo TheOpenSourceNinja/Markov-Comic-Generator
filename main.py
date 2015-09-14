@@ -519,7 +519,8 @@ for generatedComicNumber in range( numberOfComics ):
 		print( error, file=sys.stderr )
 		exit( EX_NOINPUT )
 	
-	print( "wordBubbleFileName:", wordBubbleFileName )
+	if not silence:
+		print( "wordBubbleFileName:", wordBubbleFileName )
 	
 	if commandLineComicID is None:
 		comicID = os.path.splitext( wordBubbleFileName )[ 0 ]
