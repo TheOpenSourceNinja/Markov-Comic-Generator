@@ -51,6 +51,7 @@ class WordPressUploader( Uploader ):
 		except client.Fault as fault: #How is a fault different from an error? Beats me.
 			print( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
 			print( "Fault string: %s" % fault.faultString, file = stderr )
+			print( "Username:", self.username, "Password:", self.password )
 			return
 		except client.ProtocolError as error:
 			print( "A protocol error occurred. URL: %s" % error.url, file = stderr )
@@ -70,6 +71,9 @@ class WordPressUploader( Uploader ):
 		else:
 			blogID = int( blogID )
 		
+		if blogID is None:
+			blogID = 0
+
 		self.blogID = blogID
 		
 		for blog in blogInfo:
@@ -141,6 +145,7 @@ class WordPressUploader( Uploader ):
 				transcript += line
 			transcriptFileHandle.close()
 		try:
+			
 			fileUploadResult = self.server.wp.uploadFile( self.blogID, self.username, self.password, fileData )
 			
 			if not silence:
