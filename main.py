@@ -794,7 +794,7 @@ for generatedComicNumber in range( numberOfComics ):
 	try:
 		#os.makedirs( os.path.dirname( outImageFileName ), exist_ok = True )
 		if saveForWeb:
-			image = image.convert( mode = "P", palette="WEB", dither=False ) #"ADAPTIVE" palette might look better for some images. Also try turning dithering on or off.
+			image = image.convert( mode = "P", palette="ADAPTIVE", dither=False ) #Try turning dithering on or off.
 			image.save( outImageFileName, format="PNG", optimize=True, pnginfo=infoToSave )
 		else:
 			image.save( outImageFileName, format="PNG", pnginfo=infoToSave )
