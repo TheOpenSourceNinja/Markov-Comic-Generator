@@ -122,6 +122,8 @@ class WordPressUploader( Uploader ):
 		post[ "post_date" ] = client.DateTime( postTime ) #WordPress post dates include time of day
 		post[ "post_status" ] = postStatus
 		
+		post[ "comment_status" ] = "open" #NOTE: Workaround for a Wordpress bug. WordPress 4.3.1 by default disallows comments on posts sent using XML PRC, even if its settings are supposed to allow them by default.
+		
 		post[ "terms_names" ] = dict()
 		post[ "terms_names" ][ "category" ] = postCategories
 		
