@@ -562,11 +562,12 @@ for generatedComicNumber in range( numberOfComics ):
 
 	generators = dict()
 	for speaker in speakers:
-		if not silence:
-			print( "Now building a Markov graph for character", speaker, "..." )
-		newGenerator = Generator( charLabel = speaker, cm = commentMark, randomizeCapitals = randomizeCapitals )
-		newGenerator.buildGraph( inDir )
-		generators[ speaker ] = newGenerator
+		if speaker not in generators:
+			if not silence:
+				print( "Now building a Markov graph for character", speaker, "..." )
+			newGenerator = Generator( charLabel = speaker, cm = commentMark, randomizeCapitals = randomizeCapitals )
+			newGenerator.buildGraph( inDir )
+			generators[ speaker ] = newGenerator
 
 	if not silence:
 		print( comicID )

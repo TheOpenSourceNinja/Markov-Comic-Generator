@@ -69,7 +69,7 @@ class Generator:
 						word = word.strip("*/_") #Remove emphasis
 						
 						if len( word ) > 0:
-							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ] )
+							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ].strip("*/_") )
 			
 							if word not in self.nodes.keys():
 								wordRandomized = ""
