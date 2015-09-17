@@ -151,7 +151,7 @@ class WordPressUploader( Uploader ):
 			if not silence:
 				print( "File upload result:", fileUploadResult )
 			
-			post[ "post_content" ] = '<a href="' + fileUploadResult[ "url" ] + '"><img class="aligncenter size-full img-zoomable wp-image-' + fileUploadResult[ "id" ] + '" src="' + fileUploadResult[ "url" ] + '" alt="' + transcript + '" /></a><p>Transcript:</p><p class="comic-transcript">' + transcript + '</p>'
+			post[ "post_content" ] = '<a href="' + fileUploadResult[ "url" ] + '"><img class="aligncenter size-full img-zoomable wp-image-' + fileUploadResult[ "id" ] + '" src="' + fileUploadResult[ "url" ] + '" alt="' + transcript + '" /></a>Click the image for full size.<p>Transcript:</p><p class="comic-transcript">' + transcript + '</p>'
 			
 			if originalURL is not None:
 				originalURL = str( originalURL )
