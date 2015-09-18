@@ -6,10 +6,10 @@ Label: Character. Notes.
 M: Mimi.
 E: Eunice.
 SFX: Sound effects. Onomatopoeias. Will have "dialog" like "wham!" or "boom!".
-U: Unknown/unclear. Used when words appear in a word bubble but the word bubble points offscreen, making it unclear who the speaker is supposed to be. To count as unclear, it must remain unclear for all of a strip's panels - if, for example, a word bubble points offscreen in the first panel but the speaker becomes visible in the second panel, label the dialog as coming from that character. First appearance in comic #112, "Get A Life" (http://mimiandeunice.com/2010/08/05/get-a-life/)
+U: Unknown/unclear. Used when words appear in a word bubble but the word bubble points offscreen, making it unclear who the speaker is supposed to be. To count as unclear, it must remain unclear for all of a strip's panels - if, for example, a word bubble points offscreen in the first panel but the speaker becomes visible in the second panel, label the dialog as coming from that character. One exception to this rule is dialog said by God, which sometimes come from above. First appearance in comic #112, "Get A Life" (http://mimiandeunice.com/2010/08/05/get-a-life/)
 L: Labels. Words that appear in the comic but aren't dialog belonging to any particular character. Used in original comic #013, F.E.A.R. (http://mimiandeunice.com/2010/07/26/f-e-a-r/), and others.
 D: Death. The Grim Reaper. First appearance in comic #94, "Death!" (http://mimiandeunice.com/2010/07/28/death/)
 K: Karl Marx. First appearance in comic #144, "Marximalism" (http://mimiandeunice.com/2010/08/02/marximalism/)
 B: Frédéric Bastiat. First appearance in comic #144, "Marximalism" (http://mimiandeunice.com/2010/08/02/marximalism/)
-G: God. Capital-G God. Jehovah, Yahweh, Jesus' daddy. First appearance in comic #110, "Thou Shalt Not Steal" (http://mimiandeunice.com/2010/08/06/thou-shalt-not-steal/)
+G: God. Capital-G God. Jehovah, Yahweh, Jesus' daddy. Dialog comes from above, sometimes with no other indication that God is the one talking. First appearance in comic #110, "Thou Shalt Not Steal" (http://mimiandeunice.com/2010/08/06/thou-shalt-not-steal/)
 NOBODY: Nobody. I used the full word in case of typos of M. For use only when a comic has no words at all. First use in comic #287, "Bees In Their Bonnets" (http://mimiandeunice.com/2011/01/14/bees-in-their-bonnets/). This "character"'s word bubble(s) must have coordinates -1 -1 -1 -1, and the dialog in the transcript file must contain at least one word.
