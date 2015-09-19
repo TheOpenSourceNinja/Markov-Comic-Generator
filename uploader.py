@@ -88,6 +88,7 @@ class WordPressUploader( Uploader ):
 				https://codex.WordPress.org/XML-RPC_WordPress_API/Posts#wp.newPost
 				https://codex.WordPress.org/Function_Reference/wp_insert_post
 				https://codex.WordPress.org/XML-RPC_WordPress_API/Media#wp.uploadFile
+				https://codex.wordpress.org/Post_Formats
 			Args:
 				inputFileName: The name of the image file to upload. Defaults to "default out.png"
 				shortComicTitle: The title of the comic, in short form. Will be the first part of the image file's name as uploaded to the server (the local copy will not be renamed). Defaults to the empty string.
@@ -119,8 +120,9 @@ class WordPressUploader( Uploader ):
 		post = dict()
 		dateString = datetime.date( postTime ).isoformat()
 		post[ "post_title" ] = longComicTitle + " " + dateString
-		post[ "post_date" ] = client.DateTime( postTime ) #WordPress post dates include time of day
+		post[ "post_date" ] = client.DateTime( postTime ) #WordPress post 'dates' include time of day
 		post[ "post_status" ] = postStatus
+		post[ "post_format" ] = "image" #WordPress themes are not required to support every format. If posts from this program look wonky, try commenting this line out or changing to a different format string.
 		
 		post[ "comment_status" ] = "open" #NOTE: Workaround for a Wordpress bug. WordPress 4.3.1 by default disallows comments on posts sent using XML PRC, even if its settings are supposed to allow them by default.
 		
