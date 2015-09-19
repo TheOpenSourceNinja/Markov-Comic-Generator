@@ -771,6 +771,23 @@ for generatedComicNumber in range( numberOfComics ):
 		newImage.paste( im=image, box=( 0, oldSize[1] ) )
 		image = newImage
 	
+	
+	
+	originalURL = None
+	URLFile = open( os.path.join( inDir, "sources.tsv" ), "rt" )
+	for line in URLFile:
+		line = line.partition( commentMark )[ 0 ].strip()
+		
+		if len( line ) > 0:
+			line = line.split( "\t" )
+			
+			if comicID == line[ 0 ]:
+				originalURL = line[ 1 ]
+				break;
+	URLFile.close()
+	
+	transcriptWithURL = transcript + "\n" + originalURL #The transcript that gets embedded into the image file should include the URL. The transcript that gets uploaded to blogs doesn't need it, as the URL gets sent anyway.
+	
 	infoToSave = PngInfo()
 	
 	encodingErrors = "backslashreplace" #If we encounter errors during text encoding, I feel it best to replace unencodable text with escape sequences; that way it may be possible for reader programs to recover the original unencodable text.
@@ -778,18 +795,18 @@ for generatedComicNumber in range( numberOfComics ):
 	#According to the Pillow documentation, key names should be "latin-1 encodable". I take this to mean that we ourselves don't need to encode it in latin-1.
 	key = "transcript"
 	keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
-	valueISO = transcript.encode( "iso-8859-1", errors=encodingErrors )
-	valueUTF8 = transcript.encode( "utf-8", errors=encodingErrors )
+	transcriptISO = transcriptWithURL.encode( "iso-8859-1", errors=encodingErrors )
+	transcriptUTF8 = transcriptWithURL.encode( "utf-8", errors=encodingErrors )
 	
-	infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
-	infoToSave.add_text( key=key, value=valueISO )
+	infoToSave.add_itxt( key=key, value=transcriptUTF8, tkey=keyUTF8 )
+	infoToSave.add_text( key=key, value=transcriptISO )
 	
 	#GIMP only recognizes comments
 	key = "Comment"
 	keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
 	
-	infoToSave.add_text( key=key, value=valueISO )
-	infoToSave.add_itxt( key=key, value=valueUTF8, tkey=keyUTF8 )
+	infoToSave.add_text( key=key, value=transcriptISO )
+	infoToSave.add_itxt( key=key, value=transcriptUTF8, tkey=keyUTF8 )
 	
 	try:
 		#os.makedirs( os.path.dirname( outImageFileName ), exist_ok = True )
@@ -804,19 +821,6 @@ for generatedComicNumber in range( numberOfComics ):
 	except OSError as error:
 		print( error, file = sys.stderr )
 		exit( EX_CANTCREAT )
-	
-	originalURL = None
-	URLFile = open( os.path.join( inDir, "sources.tsv" ), "rt" )
-	for line in URLFile:
-		line = line.partition( commentMark )[ 0 ].strip()
-		
-		if len( line ) > 0:
-			line = line.split( "\t" )
-			
-			if comicID == line[ 0 ]:
-				originalURL = line[ 1 ]
-				break;
-	URLFile.close()
 	
 	if not silence:
 		print( "Original comic URL:", originalURL )
