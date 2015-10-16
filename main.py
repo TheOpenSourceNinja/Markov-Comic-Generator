@@ -269,7 +269,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 				pass
 		
 		if not fontLoaded:
-			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ] #There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
+			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Neue Angular", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ] #There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
 			for family in families:
 				if fontLoaded:
 					break
@@ -508,6 +508,8 @@ blogUploaders = []
 if WordPressURI is not None:
 	blogUploaders.append( WordPressUploader( WordPressURI, loginName, loginPassword ) )
 
+generators = dict() #A dictionary of Markov chain generators, one per character. Moved this line out of the for loop so we don't have to waste time regenerating Markov graphs when two or more comics have the same characters in them. Search for "for speaker in speakers:\nif speaker not in generators:" - this was originally just above that.
+
 for generatedComicNumber in range( numberOfComics ):
 
 	try:
@@ -559,8 +561,7 @@ for generatedComicNumber in range( numberOfComics ):
 	
 	if not silence:
 		print( "These characters speak:", speakers )
-
-	generators = dict()
+	
 	for speaker in speakers:
 		if speaker not in generators:
 			if not silence:
