@@ -5,8 +5,7 @@ import sys
 import random
 import os
 import fontconfig
-import textwrap
-from PIL import Image, ImageFont, ImageDraw, ImageColor, ImageStat
+from PIL import Image, ImageFont, ImageDraw, ImageStat
 from PIL.PngImagePlugin import PngInfo
 from generator import Generator
 from idchecker import idChecker
@@ -269,7 +268,7 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 				pass
 		
 		if not fontLoaded:
-			families = [ "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Neue Angular", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ] #There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
+			families = [ "Nina Improved", "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Neue Angular", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ] #There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
 			for family in families:
 				if fontLoaded:
 					break
@@ -737,7 +736,7 @@ for generatedComicNumber in range( numberOfComics ):
 	if numberOfComics > 1:
 		oldOutTextFileName = outTextFileName
 		temp = os.path.splitext( outTextFileName )
-		outTextFileName = temp[0] + str( generatedComicNumber ) + temp[1]
+		outTextFileName = temp[ 0 ] + str( generatedComicNumber ) + temp[ 1 ]
 	
 	try:
 		#os.makedirs( os.path.dirname( outTextFileName ), exist_ok = True )
@@ -756,7 +755,7 @@ for generatedComicNumber in range( numberOfComics ):
 	if numberOfComics > 1:
 		oldOutImageFileName = outImageFileName
 		temp = os.path.splitext( outImageFileName )
-		outImageFileName = temp[0] + str( generatedComicNumber ) + temp[1]
+		outImageFileName = temp[ 0 ] + str( generatedComicNumber ) + temp[ 1 ]
 	
 	if topImageFileName != None:
 		try:
@@ -765,11 +764,11 @@ for generatedComicNumber in range( numberOfComics ):
 			print( error, file=sys.stderr )
 			exit( EX_NOINPUT )
 		oldSize = topImage.size
-		size = ( max( topImage.size[0], image.size[0] ), topImage.size[1] + image.size[1] )
+		size = ( max( topImage.size[ 0 ], image.size[ 0 ] ), topImage.size[ 1 ] + image.size[ 1 ] )
 		
 		newImage = Image.new( mode=image.mode, size=size )
 		newImage.paste( im=topImage, box=( 0, 0 ) )
-		newImage.paste( im=image, box=( 0, oldSize[1] ) )
+		newImage.paste( im=image, box=( 0, oldSize[ 1 ] ) )
 		image = newImage
 	
 	
