@@ -64,12 +64,12 @@ Word capitalization should be as it is in the original comic strip.
 If in the original comic, a word is hyphenated in order to split it between two lines of text, it is recommended that the word be kept on a single line in the transcript and the hyphen be replaced with a [soft hyphen](https://en.wikipedia.org/w/index.php?title=Soft_hyphen&oldid=625641896) (Unicode code point U+00AD). Soft hyphens are not normally visible in most text editors; they are used to mark a place where a line break, possibly with a visible hyphen, can be automatically inserted if one is needed.
 
 #### Example
-	//This first line will be blank after the comment gets removed, so it is ignored.
-	20101210 //Date serves as ID number
-	E: WOULD YOU RATHER BE *RIGHT,* OR *HAP­PY?* //Eu­nice i­s talk­ing. Al­so, th­e la­st wo­rd ha­s a­ so­ft hy­phen i­n th­e mid­dle. A­s do­es ev­ery wo­rd i­n thi­s com­ment. Fo­r de­monstra­tion o­f wha­t so­ft hy­phens d­o, tr­y resiz­ing thi­s wind­ow; se­e h­ow thi­s com­ment ge­ts wrap­ped i­n compar­ison t­o th­e oth­ers whi­ch do­n't ha­ve so­ft hy­phens i­n ever­y wo­rd.
+	}}This first line will be blank after the comment gets removed, so it is ignored.
+	20101210 }}Date serves as ID number
+	E: WOULD YOU RATHER BE *RIGHT,* OR *HAP­PY?* }}Eu­nice i­s talk­ing. Al­so, th­e la­st wo­rd ha­s a­ so­ft hy­phen i­n th­e mid­dle. A­s do­es ev­ery wo­rd i­n thi­s com­ment. Fo­r de­monstra­tion o­f wha­t so­ft hy­phens d­o, tr­y resiz­ing thi­s wind­ow; se­e h­ow thi­s com­ment ge­ts wrap­ped i­n compar­ison t­o th­e oth­ers whi­ch do­n't ha­ve so­ft hy­phens i­n ever­y wo­rd.
 	M: *NEITHER!*
-	//E: *NEITHER!* //If Mimi and Eunice both said this at the same time, we would uncomment this line.
-	M: I'D RATHER BE *RICH!* //Note: For some reason Mimi and Eunice speak in all caps. See for yourself: http://mimiandeunice.com/2010/12/10/right-or-happy-iii/
+	}}E: *NEITHER!* }}If Mimi and Eunice both said this at the same time, we would uncomment this line.
+	M: I'D RATHER BE *RICH!* }}Note: For some reason Mimi and Eunice speak in all caps. See for yourself: http://mimiandeunice.com/2010/12/10/right-or-happy-iii/
 
 ### Image files
 Each image file should be in the images/ folder inside the input directory. Its name should be its ID number followed by an extension appropriate for the format. The image should have all dialog blanked out so that empty word balloons are left.
@@ -84,19 +84,20 @@ All following lines should take the form of one character label, a tab, the X co
 If multiple characters use the same speech bubble (saying the same thing at the same time), create separate lines in the file - one for each speaker, one line coming immediately after the other - with identical speech bubble coordinates.
 
 #### Example
-	20101210//The image is stored as images/20101210.png; this definition file is stored as word-bubbles/20101210.tsv
-	E	M //List of speakers
-	//Speaker	X	Y	X	Y
+	20101210}}The image is stored as images/20101210.png; this definition file is stored as word-bubbles/20101210.tsv
+	E	M }}List of speakers
+	}}Speaker	X	Y	X	Y
 	E	37	6	180	69
 	M	280	48	370	76
-	//E	280	48	370	76 //If this comic had Eunice sharing a speech bubble with Mimi, we would uncomment this line.
-	M	488	30	586	82	ABC //The ABC will be ignored by this program version. Later versions of this program might use it.
+	}}E	280	48	370	76 }}If this comic had Eunice sharing a speech bubble with Mimi, we would uncomment this line.
+	M	488	30	586	82	ABC }}The ABC will be ignored by this program version because it comes after the final coordinate. Later versions of this program might use it.
 
 ## Fonts
 The program will use the first usable font it finds, searching in the following order:
 
 1. A font file specified on the command line ("--font" on the command line)
 1. All font files in the "fonts" subdirectory of the input directory.
+1. [Nina Improved](https://github.com/TheOpenSourceNinja/Nina-Improved)
 1. [Nina](https://archive.org/details/NinaPaleyFonts)
 1. [Humor Sans](http://antiyawn.com/uploads/humorsans.html)
 1. [Tomson Talks](http://purl.org/net/2008,frankbruder/font/TomsonTalks)
