@@ -1,1 +1,4 @@
-TEST ON #339 (for underlines) and 347 (for uncommon Unicode symbols)
+TEST ON:
+339 (for underlines)
+347 (for uncommon Unicode symbols)
+453 (for APNG support)
