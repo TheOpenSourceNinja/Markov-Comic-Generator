@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
+import mimetypes
 import xmlrpc.client as client
-from sys import stderr
 from datetime import datetime
 from os import path
-import mimetypes
+from sys import stderr
 from urllib.parse import urlparse
+
 
 class Uploader:
 	def __init__( self ):

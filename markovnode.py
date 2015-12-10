@@ -2,6 +2,7 @@
 
 import random
 
+
 class MarkovNode:
 	def __init__( self, word, nonRandomizedWord, isEnd = False, isBold = False, isItalic = False, isUnderlined = False, font = None ):
 		'''Initialize. Duh.

@@ -1,16 +1,18 @@
 #!/usr/bin/python3
 
 import getopt
-import sys
-import random
 import os
-import fontconfig
-from PIL import Image, ImageFont, ImageDraw, ImageStat
+import random
+import sys
+
+from PIL import Image, ImageDraw, ImageFont, ImageStat
 from PIL.PngImagePlugin import PngInfo
+
+import fontconfig
 from generator import Generator
 from idchecker import idChecker
 from markovnode import MarkovNode
-from uploader import WordPressUploader, DrupalUploader
+from uploader import DrupalUploader, WordPressUploader
 
 idChecker = idChecker()
 
@@ -196,6 +198,8 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 	fontLoaded = False
 	fontFile = None
 	
+	normalStyles = [ "normal", "regular", "medium" ]
+	
 	if commandLineFont is None:
 		commandLineFont = ""
 	
@@ -218,10 +222,10 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 			fontLoaded = False
 			for language, style in testFile.style:
 				if language.lower() == "en":
-					if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+					if style.lower() in normalStyles:
 						fontLoaded = True
 				#default
-				if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+				if style.lower() in normalStyles:
 					fontLoaded = True
 	except ( IOError, OSError ):
 		pass
@@ -255,11 +259,11 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 						fontFile = None
 						for language, style in testFile.style:
 							if language.lower() == "en":
-								if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+								if style.lower() in normalStyles:
 									fontLoaded = True
 									fontFile = testFile.file
 							#default
-							if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+							if style.lower() in normalStyles:
 								fontLoaded = True
 								fontFile = testFile.file
 					if fontLoaded:
@@ -299,10 +303,10 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 					elif preferNormal:
 						for language, style in testFile.style:
 							if language.lower() == "en":
-								if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+								if style.lower() in normalStyles:
 									valid = True
 									break
-							if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+							if style.lower() in normalStyles:
 								valid = True
 								break;
 						if valid:
@@ -342,10 +346,10 @@ def findSuitableFont( fontsDir = "fonts", charToCheck = None, commandLineFont = 
 					elif preferNormal:
 						for language, style in testFile.style:
 							if language.lower() == "en":
-								if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+								if style.lower() in normalStyles:
 									valid = True
 									break
-							if style.lower() == "medium" or style.lower() == "regular" or style.lower() == "normal":
+							if style.lower() in normalStyles:
 								valid = True
 								break;
 						if valid:
@@ -596,12 +600,12 @@ for generatedComicNumber in range( numberOfComics ):
 			except:
 				print( "Error: Word bubble file", wordBubbleFileName, "does not list", character, "in its list of speakers.", file=sys.stderr )
 				exit( EX_DATAERR )
-		
+			
 			topLeftX = int( line[ 1 ] )
 			topLeftY = int( line[ 2 ] )
 			bottomRightX = int( line[ 3 ] )
 			bottomRightY = int( line[ 4 ] )
-		
+			
 			box = ( topLeftX, topLeftY, bottomRightX, bottomRightY )
 			
 			if box != previousBox:
@@ -612,7 +616,7 @@ for generatedComicNumber in range( numberOfComics ):
 				for node in nodeList:
 					text += node.word + " "
 				text.rstrip()
-			
+				
 				oneCharacterTranscript = character + ": "
 				oneCharacterTranscript += stringFromNodes( nodeList )
 				if not silence:
@@ -622,7 +626,7 @@ for generatedComicNumber in range( numberOfComics ):
 				
 				wordBubble = image.crop( box )
 				draw = ImageDraw.Draw( wordBubble )
-			
+				
 				width = bottomRightX - topLeftX
 				if width <= 0: #Width must be positive
 					width = 1
@@ -631,7 +635,7 @@ for generatedComicNumber in range( numberOfComics ):
 					height = 1
 				
 				size = int( height * 1.2 ) #Contrary to the claim by PIL's documentation, font sizes are apparently in pixels, not points. The size being requested is the height of a generic character; the actual height of any particular character will be approximately (not exactly) the requested size. We will try smaller and smaller sizes in the while loop below. The 1.2, used to account for the fact that real character sizes aren't exactly the same as the requested size, I just guessed an appropriate value.
-	
+				
 				normalFont = ImageFont.truetype( normalFontFile, size = size )
 				boldFont = ImageFont.truetype( boldFontFile, size = size )
 				
@@ -670,14 +674,14 @@ for generatedComicNumber in range( numberOfComics ):
 							normalFont = ImageFont.load_default()
 							boldFont = ImageFont.loa_default()
 						listoflists = rewrap_nodelistlist( nodeList, normalFont, boldFont, width, fontSize = size )
-		
+				
 				midX = int( wordBubble.size[ 0 ] / 2 )
 				midY = int( wordBubble.size[ 1 ] / 2 )
-		
+				
 				try: #Choose a text color that will be visible against the background
 					backgroundColor = ImageStat.Stat( wordBubble ).mean #wordBubble.getpixel( ( midX, midY ) )
 					textColorList = []
-				
+					
 					useIntegers = False
 					useFloats = False
 					if wordBubble.mode.startswith( "1" ):
@@ -694,25 +698,25 @@ for generatedComicNumber in range( numberOfComics ):
 						useFloats = True
 					else: #I've added all modes currently supported according to Pillow documentation; this is for future compatibility
 						bandMax = max( ImageStat.Stat( image ).extrema )
-				
+					
 					for c in backgroundColor:
 						d = bandMax - ( c * 1.5 )
 						
 						if d < 0:
 							d = 0
-					
+						
 						if useIntegers:
 							d = int( d )
 						elif useFloats:
 							d = float( d )
-					
+						
 						textColorList.append( d )
-				
+					
 					if wordBubble.mode.endswith( "A" ): #Pillow supports two modes with alpha channels
 						textColorList[ -1 ] = bandMax
-				
+					
 					textColor = tuple( textColorList )
-				
+					
 				except ValueError:
 					textColor = "black"
 				
@@ -728,9 +732,9 @@ for generatedComicNumber in range( numberOfComics ):
 						yOffsetAdditional = max( yOffsetAdditional, tempSize[ 1 ] )
 						node.unselectStyle()
 					offset += yOffsetAdditional
-					
+				
 				image.paste( wordBubble, box )
-		
+				
 	wordBubbleFile.close()
 	
 	if numberOfComics > 1:

@@ -1,4 +1,7 @@
+#!/usr/bin/python3
+
 from os import path
+
 
 class idChecker:
 	def __init__( self ):

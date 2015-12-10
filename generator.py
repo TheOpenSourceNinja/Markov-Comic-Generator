@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 
-import random
 import os
+import random
 import sys
+
 from idchecker import idChecker
 from markovnode import MarkovNode
+
 
 class Generator:
 	def __init__( self, charLabel, cm = "//", randomizeCapitals = False ):
