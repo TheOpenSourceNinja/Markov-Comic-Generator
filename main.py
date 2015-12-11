@@ -571,6 +571,10 @@ for generatedComicNumber in range( numberOfComics ):
 				print( "Now building a Markov graph for character", speaker, "..." )
 			newGenerator = Generator( charLabel = speaker, cm = commentMark, randomizeCapitals = randomizeCapitals )
 			newGenerator.buildGraph( inDir )
+			
+			if not silence:
+				newGenerator.showStats()
+			
 			generators[ speaker ] = newGenerator
 
 	if not silence:
@@ -694,7 +698,7 @@ for generatedComicNumber in range( numberOfComics ):
 						bandMax = 2147483647 #max for a 32-bit signed integer
 						useIntegers = True
 					elif wordBubble.mode.startswith( "F" ):
-						bandMax = float( infinity )
+						bandMax = float( "infinity" )
 						useFloats = True
 					else: #I've added all modes currently supported according to Pillow documentation; this is for future compatibility
 						bandMax = max( ImageStat.Stat( image ).extrema )

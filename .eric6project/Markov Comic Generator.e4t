@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Tasks SYSTEM "Tasks-5.1.dtd">
+<!-- eric6 tasks file for project Markov Comic Generator -->
+<!-- Saved: 2015-12-10, 17:50:15 -->
+<Tasks version="5.1">
+  <ProjectScanFilter></ProjectScanFilter>
+  <Task priority="1" completed="False" type="2">
+    <Summary>WARNING: If this URI does not use encryption (e.g. starting with httpS), then USERNAMES and PASSWORDS will be transmitted in CLEARTEXT!</Summary>
+    <Description></Description>
+    <Created>2015-12-10, 17:50:12</Created>
+    <Resource>
+      <Filename>uploader.py</Filename>
+      <Linenumber>33</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="2">
+    <Summary>WARNING: URI does not use any known secure protocol. USERNAMES and PASSWORDS are being transmitted in CLEARTEXT!&quot;, &quot;\nThis is the URI:&quot;, uri, file = stderr )</Summary>
+    <Description></Description>
+    <Created>2015-12-10, 17:50:12</Created>
+    <Resource>
+      <Filename>uploader.py</Filename>
+      <Linenumber>44</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="3">
+    <Summary>NOTE: Workaround for a Wordpress bug. WordPress 4.3.1 by default disallows comments on posts sent using XML PRC, even if its settings are supposed to allow them by default.</Summary>
+    <Description></Description>
+    <Created>2015-12-10, 17:50:12</Created>
+    <Resource>
+      <Filename>uploader.py</Filename>
+      <Linenumber>128</Linenumber>
+    </Resource>
+  </Task>
+</Tasks>

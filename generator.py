@@ -20,6 +20,8 @@ class Generator:
 		self.lines = []
 		self.commentMark = cm
 		self.randomizeCapitals = randomizeCapitals
+		self.numInputWords = 0
+		self.numInputSentences = 0
 	
 	def randomBoolean( self, probability = 0.5 ):
 		'''Get a random true or false value, with the given probability of being true.
@@ -32,6 +34,14 @@ class Generator:
 			raise ValueError( "probability must be between 0 and 1 inclusive" )
 		
 		return( random.random() <= probability )
+	
+	def showStats( self ):
+		'''Shows a few stats on standard output. Shouldn't be called before buildGraph().
+		'''
+		if self.numInputSentences > 0:
+			print( "Character " + self.charLabel + " has a total of " + str( self.numInputWords ) + " words over " + str( self.numInputSentences ) + " sentences for an average of " + str( self.numInputWords / self.numInputSentences ) + " words/sentence.")
+		else:
+			print( "Character " + self.charLabel + " has a total of " + str( self.numInputWords ) + " words." )
 	
 	def buildGraph( self, inDir ):
 		'''Build the Markov graph for this generator's comic character.
@@ -49,16 +59,16 @@ class Generator:
 				break;
 		
 			for line in inFile:
-				line = line.partition( self.commentMark )[0].strip()
+				line = line.partition( self.commentMark )[ 0 ].strip()
 				if( len( line ) > 0 ):
 					line = line.split()
-					speaker = line[0].rstrip(":").strip()
+					speaker = line[ 0 ].rstrip(":").strip()
 					if speaker.upper() == self.charLabel:
 						dialog = line[1:]
 						self.lines.append( dialog )
-		
+			
 			inFile.close()
-		
+			
 			self.nodes = dict()
 			self.sentenceStarts = []
 			previousWord = None
@@ -71,8 +81,12 @@ class Generator:
 						word = word.strip("*/_") #Remove emphasis
 						
 						if len( word ) > 0:
+							self.numInputWords += 1
 							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ].strip("*/_") )
-			
+							
+							if isEnd:
+								self.numInputSentences += 1
+							
 							if word not in self.nodes.keys():
 								wordRandomized = ""
 								if self.randomizeCapitals:
