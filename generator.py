@@ -49,6 +49,7 @@ class Generator:
 				inDir: The directory in which to find the 'transcripts' subdirectory. The 'transcripts' subdirectory is where we will actually look for everything.
 		'''
 		transcriptDir = os.path.join( inDir, "transcripts" )
+		
 		for inFileName in os.listdir( transcriptDir ):
 			inFileName = os.path.join( transcriptDir, inFileName )
 			inFile = open( file=inFileName, mode="rt" )
@@ -69,58 +70,58 @@ class Generator:
 			
 			inFile.close()
 			
-			self.nodes = dict()
-			self.sentenceStarts = []
-			previousWord = None
-			for line in self.lines:
-				if( len( line ) > 0 ):
-					for word in line:
-						isBold = "*" in word
-						isItalic = "/" in word
-						isUnderlined = "_" in word
-						word = word.strip("*/_") #Remove emphasis
+		self.nodes = dict()
+		self.sentenceStarts = []
+		previousWord = None
+		for line in self.lines:
+			if( len( line ) > 0 ):
+				for word in line:
+					isBold = "*" in word
+					isItalic = "/" in word
+					isUnderlined = "_" in word
+					word = word.strip("*/_") #Remove emphasis
+					
+					if len( word ) > 0:
+						self.numInputWords += 1
+						isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ].strip("*/_") )
 						
-						if len( word ) > 0:
-							self.numInputWords += 1
-							isEnd = ( word.endswith( ( ".", "?", "!", '."', '?"', '!"', ".'", "?'", "!'" ) ) or word == line[ -1 ].strip("*/_") )
-							
-							if isEnd:
-								self.numInputSentences += 1
-							
-							if word not in self.nodes.keys():
-								wordRandomized = ""
-								if self.randomizeCapitals:
-									for letter in word:
-										if self.randomBoolean():
-											letter = letter.upper()
-										else:
-											letter = letter.lower()
-										wordRandomized += letter
-								else:
-									wordRandomized = word
-								self.nodes[ word ] = MarkovNode( wordRandomized, word, isEnd )
-								
-							if not previousWord == None:
-								if self.nodes[ previousWord ].isEnd:
-									self.sentenceStarts.append( word )
-								else:
-									self.nodes[ previousWord ].addLink( self.nodes[ word ] )
+						if isEnd:
+							self.numInputSentences += 1
+						
+						if word not in self.nodes.keys():
+							wordRandomized = ""
+							if self.randomizeCapitals:
+								for letter in word:
+									if self.randomBoolean():
+										letter = letter.upper()
+									else:
+										letter = letter.lower()
+									wordRandomized += letter
 							else:
-								if word not in self.sentenceStarts:
-									self.sentenceStarts.append( word )
+								wordRandomized = word
+							self.nodes[ word ] = MarkovNode( wordRandomized, word, isEnd )
 							
-							if isBold:
-								self.nodes[ word ].addBold()
-							if isItalic:
-								self.nodes[ word ].addItalic()
-							if isUnderlined:
-								self.nodes[ word ].addUnderlined()
-							
-							if not isBold and not isItalic and not isUnderlined:
-								self.nodes[ word ].addNormal()
-							
-							previousWord = word
-			
+						if not previousWord == None:
+							if self.nodes[ previousWord ].isEnd:
+								self.sentenceStarts.append( word )
+							else:
+								self.nodes[ previousWord ].addLink( self.nodes[ word ] )
+						else:
+							if word not in self.sentenceStarts:
+								self.sentenceStarts.append( word )
+						
+						if isBold:
+							self.nodes[ word ].addBold()
+						if isItalic:
+							self.nodes[ word ].addItalic()
+						if isUnderlined:
+							self.nodes[ word ].addUnderlined()
+						
+						if not isBold and not isItalic and not isUnderlined:
+							self.nodes[ word ].addNormal()
+						
+						previousWord = word
+	
 	def generateSentences(self, numberOfSentences = 1):
 		'''Generate some number of sentences (paths through the Markov graph).
 			Args:

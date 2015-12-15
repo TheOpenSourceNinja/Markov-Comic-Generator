@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-5.1.dtd">
 <!-- eric6 tasks file for project Markov Comic Generator -->
-<!-- Saved: 2015-12-10, 17:50:15 -->
+<!-- Saved: 2015-12-14, 21:56:23 -->
 <Tasks version="5.1">
   <ProjectScanFilter></ProjectScanFilter>
   <Task priority="1" completed="False" type="2">
