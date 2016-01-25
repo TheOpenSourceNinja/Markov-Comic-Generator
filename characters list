@@ -7,7 +7,7 @@ M: Mimi.
 E: Eunice.
 SFX: Sound effects. Onomatopoeias. Will have "dialog" like "wham!" or "boom!".
 U: Unknown/unclear. Used when words appear in a word bubble but the word bubble points offscreen, making it unclear who the speaker is supposed to be. To count as unclear, it must remain unclear for all of a strip's panels - if, for example, a word bubble points offscreen in the first panel but the speaker becomes visible in the second panel, label the dialog as coming from that character. One exception to this rule is dialog said by God, which sometimes come from above. First appearance in comic #112, "Get A Life" (http://mimiandeunice.com/2010/08/05/get-a-life/)
-L: Labels. Words that appear in the comic but aren't dialog belonging to any particular character. Used in original comic #013, F.E.A.R. (http://mimiandeunice.com/2010/07/26/f-e-a-r/), and others.
+L: Labels. Words that appear in the comic but aren't dialog belonging to any particular character. Used in original comic #013, F.E.A.R. (http://mimiandeunice.com/2010/07/26/f-e-a-r/), and others. Also used when objects such as signs have text on them.
 D: Death. The Grim Reaper. First appearance in comic #94, "Death!" (http://mimiandeunice.com/2010/07/28/death/)
 K: Karl Marx. First appearance in comic #144, "Marximalism" (http://mimiandeunice.com/2010/08/02/marximalism/)
 B: Frédéric Bastiat. First appearance in comic #144, "Marximalism" (http://mimiandeunice.com/2010/08/02/marximalism/)
@@ -15,4 +15,3 @@ G: God. Capital-G God. Jehovah, Yahweh, Jesus' daddy. Dialog comes from above, s
 NOBODY: Nobody. I used the full word in case of typos of M. For use only when a comic has no words at all. First use in comic #287, "Bees In Their Bonnets" (http://mimiandeunice.com/2011/01/14/bees-in-their-bonnets/). This "character"'s word bubble(s) must have coordinates -1 -1 -1 -1, and the dialog in the transcript file must contain at least one word.
 F: A nameless foreigner. First use in #346, "See The World" (http://mimiandeunice.com/2011/04/15/see-the-world/).
 C: Online commenter(s). First use in #358, "Posting Art Online" (http://mimiandeunice.com/2011/05/10/posting-art-online/)
-S: Sign. Firse use in #501, "Focus On Yourself" (https://mimiandeunice.com/2012/07/23/focus-on-yourself/)
