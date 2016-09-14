@@ -27,7 +27,7 @@ EX_NOPERM = 77 #Permission error
 
 #Set defaults
 silence = silenceDefault = False
-inDir = inDirDefault = "./"
+inDir = inDirDefault = "./data/"
 outTextFileName = outTextFileNameDefault = "default out.txt"
 outImageFileName = outImageFileNameDefault = "default out.png"
 numberOfComics = numberOfComicsDefault = 1
