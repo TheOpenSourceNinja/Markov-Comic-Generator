@@ -12,15 +12,16 @@ For fun.
 * main.py: The Python script responsible for everything else
 * LICENSE: The copyright license governing the code (fonts and images are under separate licenses)
 * README.md: This file
-* fonts: The directory in which desired font(s) should be installed. Currently contains two variants (one bold and one non-bold) of Nina Paley's handwriting-based TrueType font. This font is not part of the Markov Comic Generator project; it is included so that you will have at least one comic-ish font. Some other fonts are linked to in the Fonts section below.
-* fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
-* images: The directory in which input images should go. Contains one sample image.
-* transcripts: The directory in which comic transcripts should go. Contains one sample transcript.
-* word-bubbles: The directory in which definition files should go. Contains one sample file.
-* sources.tsv: An optional text file containing the locations at which original, unedited comics can be found. Contains the URL of the one sample image.
+* data: A git subtree linked to the [Mimi and Eunice Transcripts](https://github.com/TheOpenSourceNinja/Mimi-and-Eunice-transcripts) git repository.
+* data/fonts: The directory in which desired font(s) should be installed. Currently is linked (via git subtree) to the [Nina Improved](https://github.com/TheOpenSourceNinja/Nina-Improved) git repository.
+* data/fonts/LICENSE AND ATTRIBUTION: License and attribution information for Nina's font.
+* data/images: The directory in which input images should go.
+* data/transcripts: The directory in which comic transcripts should go.
+* data/word-bubbles: The directory in which definition files should go.
+* data/sources.tsv: An optional text file containing the locations at which original, unedited comics can be found.
 
 ## The Input Directory
-The input directory is the directory in which all input files must be located. It defaults to the current working directory but can be specified on the command line with the --indir option.
+The input directory is the directory in which all input files must be located. It defaults to the data folder but can be specified on the command line with the --indir option.
 
 ## Input file formats
 ### Common
