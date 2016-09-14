@@ -1,0 +1,10 @@
+411
+M: GRR.
+E: WOOT.
+L: SOAP
+M: GRR!
+E: WOOT!
+L: SOAP
+M: *GRR!*
+E: *WOOT!*
+L: SOAP
