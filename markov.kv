@@ -1,0 +1,40 @@
+#:kivy 1.9.1
+
+<MarkovGUI>:
+	#Background
+	#canvas.before:
+	#	Color:
+	#		rgba: 1, 1, 1, 1 #white
+	#	Rectangle:
+	#		size: self.size
+	#		pos: self.pos
+	
+	#This makes these things accessible from the Python object as, e.g., self.dateLabel rather than the more cumbersome self.ids["dateLabel"]
+	comicArea: comicArea
+	generateButton: generateButton
+	saveButton: saveButton
+	shareButton: shareButton
+	
+	BoxLayout:
+		orientation: 'vertical'
+		size: root.size
+		Image:
+			id: comicArea
+			allow_stretch: True
+			keep_ratio: True
+			mipmap: False
+			
+		BoxLayout:
+			orientation: "horizontal"
+			size_hint: (1, .25)
+			Button:
+				text: "Generate Another"
+				id: generateButton
+				
+			Button:
+				text: "Save"
+				id: saveButton
+				
+			Button:
+				text: "Share"
+				id: shareButton
