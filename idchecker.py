@@ -1,7 +1,7 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
+# coding=utf-8
 
 from os import path
-
 
 class idChecker:
 	def __init__( self ):

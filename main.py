@@ -1,7 +1,10 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
+# coding=utf-8
 
-__version__ = "0.9" #I feel almost done with this, so 0.9 for now. I'll probably change it to 1.0 if/when I figure out how to share images with other apps.
+__version__ = "0.9"
+#I feel almost done with this, so 0.9 for now. I'll probably change it to 1.0 if/when I figure out how to share images with other apps.
 
+import six
 import getopt
 import os
 import random
@@ -10,7 +13,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont, ImageStat
 from PIL.PngImagePlugin import PngInfo
 
-import fontconfig
+import pygame
 from generator import Generator
 from idchecker import idChecker
 from markovnode import MarkovNode
@@ -20,6 +23,7 @@ kivy.require("1.9.1") #my current version as of 2016-09-13. Beware of using olde
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.graphics.texture import Texture
+import string
 
 idChecker = idChecker()
 
@@ -55,7 +59,7 @@ class MarkovApp( App ):
 		self.silence = self.silenceDefault = False
 		
 		if not self.silence:
-			print( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
+			six.print_( "Copyright 2015 James Dearing. Licensed under the GNU Affero General Public License (AGPL), either version 3.0 or (at your option) any later version published by the Free Software Foundation. You should have received a copy of the AGPL with this program. If you did not, you can find version 3 at https://www.gnu.org/licenses/agpl-3.0.html or the latest version at https://www.gnu.org/licenses/agpl.html" )
 		
 		
 		self.inDir = self.inDirDefault = "./data/"
@@ -202,7 +206,11 @@ class MarkovApp( App ):
 		for nodeList in temp:
 			line = []
 			for node in nodeList:
-				node.word = "".join( [ ch for ch in node.word if ch.isprintable() ] )
+				try:
+					node.word = "".join( [ ch for ch in node.word if ch.isprintable() ] )
+				except AttributeError:
+					node.word = "".join( [ ch for ch in node.word if ch in string.printable ] )
+				
 				line.append( node )
 			temp2.append( line )
 		
@@ -238,203 +246,39 @@ class MarkovApp( App ):
 			Returns:
 				A string representing a path to a suitable font file, or None if none could be found.
 			'''
-		fontLoaded = False
-		fontFile = None
 		
-		normalStyles = [ "normal", "regular", "medium" ]
-		
-		if self.commandLineFont is None:
-			commandLineFont = ""
-		
-		try:
-			self.normalFont = ImageFont.truetype( commandLineFont )#, size=size )
-			fontFile = commandLineFont
-			fontLoaded = True
-			if preferBold:
-				testFile = fontconfig.FcFont( commandLineFont )
-				fontLoaded = False
-				for language, style in testFile.style:
-					if language.lower() == "en":
-						if style.lower() == "bold": #Do other languages use English names for styles?
-							fontLoaded = True
-					#default
-					if style.lower() == "bold":
-						fontLoaded = True
-			elif preferNormal:
-				testFile = fontconfig.FcFont( commandLineFont )
-				fontLoaded = False
-				for language, style in testFile.style:
-					if language.lower() == "en":
-						if style.lower() in normalStyles:
-							fontLoaded = True
-					#default
-					if style.lower() in normalStyles:
-						fontLoaded = True
-		except ( IOError, OSError ):
-			pass
-		
-		if not fontLoaded:
-			fileList = os.listdir( self.fontsDir )
-			for testFileName in fileList:
-				testFileName = os.path.join( self.fontsDir, testFileName )
-				try:
-					testFile = fontconfig.FcFont( testFileName )
-					if charToCheck == None or testFile.has_char( charToCheck ):
-						self.normalFont = ImageFont.truetype( testFile.file )#, size=size )
-						fontLoaded = True
-						fontFile = testFile.file
-						if preferBold:
-							#testFile = fontconfig.FcFont( fontFile )
-							fontLoaded = False
-							fontFile = None
-							for language, style in testFile.style:
-								if language.lower() == "en":
-									if style.lower() == "bold":
-										fontLoaded = True
-										fontFile = testFile.file
-								#default
-								if style.lower() == "bold":
-									fontLoaded = True
-									fontFile = testFile.file
-						elif preferNormal:
-							testFile = fontconfig.FcFont( fontFile )
-							fontLoaded = False
-							fontFile = None
-							for language, style in testFile.style:
-								if language.lower() == "en":
-									if style.lower() in normalStyles:
-										fontLoaded = True
-										fontFile = testFile.file
-								#default
-								if style.lower() in normalStyles:
-									fontLoaded = True
-									fontFile = testFile.file
-						if fontLoaded:
-							break
-				except ( IOError, OSError ):
-					pass
-			
-			if not fontLoaded:
-				families = [ "Nina Improved", "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Neue Angular", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ] #There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
-				for family in families:
-					if fontLoaded:
-						break
-					fontList = fontconfig.query( family=family )
-					for testFileName in fontList:
-						if fontLoaded:
-							break
-						testFile = fontconfig.FcFont( testFileName )
-						valid = False
-						if preferBold:
-							for language, style in testFile.style:
-								if language.lower() == "en":
-									if style.lower() == "bold":
-										valid = True
-										break
-								if style.lower() == "bold":
-									valid = True
-									break;
-							if valid:
-								try:
-									if charToCheck == None or testFile.has_char( charToCheck ):
-										self.normalFont = ImageFont.truetype( testFile.file, size=self.size )
-										fontLoaded = True
-										fontFile = testFile.file
-										break
-								except ( IOError, OSError ):
-									pass
-						elif preferNormal:
-							for language, style in testFile.style:
-								if language.lower() == "en":
-									if style.lower() in normalStyles:
-										valid = True
-										break
-								if style.lower() in normalStyles:
-									valid = True
-									break;
-							if valid:
-								try:
-									if charToCheck == None or testFile.has_char( charToCheck ):
-										self.normalFont = ImageFont.truetype( testFile.file, size=self.size )
-										fontLoaded = True
-										fontFile = testFile.file
-										break
-								except ( IOError, OSError ):
-									pass
-				if not fontLoaded:
-					fontList = fontconfig.query() #Gets a list of all fonts in system font directories
-					for testFileName in fontList:
-						if fontLoaded:
-							break
-						testFile = fontconfig.FcFont( testFileName )
-						valid = False
-						if preferBold:
-							for language, style in testFile.style:
-								if language.lower() == "en":
-									if style.lower() == "bold":
-										valid = True
-										break
-								if style.lower() == "bold":
-									valid = True
-									break;
-							if valid:
-								try:
-									if charToCheck == None or testFile.has_char( charToCheck ):
-										self.normalFont = ImageFont.truetype( testFile.file, size=self.size )
-										fontLoaded = True
-										fontFile = testFile.file
-										break
-								except ( IOError, OSError ):
-									pass
-						elif preferNormal:
-							for language, style in testFile.style:
-								if language.lower() == "en":
-									if style.lower() in normalStyles:
-										valid = True
-										break
-								if style.lower() in normalStyles:
-									valid = True
-									break;
-							if valid:
-								try:
-									if charToCheck == None or testFile.has_char( charToCheck ):
-										self.normalFont = ImageFont.truetype( testFile.file, size=self.size )
-										fontLoaded = True
-										fontFile = testFile.file
-										break
-								except ( IOError, OSError ):
-									pass
-					if not fontLoaded:
-						#This should only be reachable if the system has absolutely no fonts
-						if not self.silence:
-							print( "No usable fonts found. Using default font." )
-						self.normalFont = ImageFont.load_default()
-						fontFile = None
+		#There's no standard "comic" font style, so instead we use a list of known comic-ish font families. Feel free to add to the list or to reorder it however you want. Ubuntu Titling isn't very comic-ish; I just wanted something that doesn't resemble Arial or Times to come after Comic Sans.
+		#families = [ "Nina Improved", "Nina", "Humor Sans", "Tomson Talks", "Nibby", "Vipond Comic LC", "Vipond Comic UC", "Comic Neue", "Comic Neue Angular", "Comic Relief", "Dekko", "Ruji's Handwriting Font", "Open Comic Font", "Comic Sans MS", "Ubuntu Titling" ]
+		families = [ "ninaimproved", "nina", "humorsans", "tomsontalks", "nibby", "vipondcomiclc", "vipondcomicuc", "comicneue", "comicneueangular", "comicrelief", "dekko", "ruji'shandwritingfont", "opencomicfont", "comicsansms", "ubuntutitling" ]
+		for family in families:
+			fontFile = pygame.font.match_font( family, bold=preferBold )
+			if fontFile is not None:
+				break
 		return fontFile
 
 	def usage( self ):
 		'''Print command line usage info.
 		'''
-		print( "😕" ) #In case of transcoding errors: this should be U+1F615, "confused face"
-		print( "Usage: The program takes the following command line arguments:" )
+		six.print_( "😕" ) #In case of transcoding errors: this should be U+1F615, "confused face"
+		six.print_( "Usage: The program takes the following command line arguments:" )
 		 #the first character of each of these should be U+1F78D, "black slightly small square":
-		print( "🞍 -a or --login-password: a password to log in to WordPress with. Only applicable in combination with --login-name and --WordPress-uri. Defaults to", loginPasswordDefault )
-		print( "🞍 -b or --long-name: The comic's name, long form. Used when uploading to blogs. Defaults to the short form." )
-		print( "🞍 -c or --comic-id: The ID number of a specific comic image to use. Useful for debugging. Defaults to a randomly selected ID." )
-		print( "🞍 -d or --short-name: The comic's name, short form. Used when uploading to blogs. Defaults to", shortNameDefault )
-		print( "🞍 -f or --font: The path to a font file to use." )
-		print( "🞍 -g or --generate: The number of comics to generate. Defaults to", numberOfComicsDefault )
-		print( "🞍 -h or --help: Display this usage info." )
-		print( "🞍 -i or --indir: The directory in which to look for inputs (must have fonts/, images/, transcripts/, and word-bubbles/ subdirectories). Defaults to", inDirDefault )
-		print( "🞍 -l or --login-name: a username to log in to WordPress with. Only applicable in combination with --login-password and --WordPress-uri. Defaults to", loginNameDefault )
-		print( "🞍 -n or --no-gui: Do not show a GUI. Defaults to ", noGUIDefault )
-		print( "🞍 -o or --outtextfile: The name of a text file to save the resulting sentences to. Defaults to", outTextFileNameDefault )
-		print( "🞍 -p or --outimagefile: The name of an image file to save the resulting comic to. Numbers will be appended if multiple comics are generated. Defaults to", outImageFileNameDefault )
-		print( '🞍 -r or --randomize-capitals: Some comic fonts have alternate capital letter forms instead of lower-case letters. In that case, using random "upper-case" and "lower-case" letters actually results in all upper-case letters but with a somewhat more handwriting-like look. Defaults to', randomizeCapitalsDefault )
-		print( "🞍 -s or --silent: Prevents output on standard out. Defaults to", silenceDefault )
-		print( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
-		print( "🞍 -u or --WordPress-uri: The URI of a WordPress blog's xmlrpc.php file. Specify this if you want the comic automatically uploaded as a blog post. Will probably require that --login-name and --login-password be specified too (this is up to WordPress, not us). Defaults to", WordPressURIDefault )
-		print( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
+		six.print_( "🞍 -a or --login-password: a password to log in to WordPress with. Only applicable in combination with --login-name and --WordPress-uri. Defaults to", self.loginPasswordDefault )
+		six.print_( "🞍 -b or --long-name: The comic's name, long form. Used when uploading to blogs. Defaults to the short form." )
+		six.print_( "🞍 -c or --comic-id: The ID number of a specific comic image to use. Useful for debugging. Defaults to a randomly selected ID." )
+		six.print_( "🞍 -d or --short-name: The comic's name, short form. Used when uploading to blogs. Defaults to", self.shortNameDefault )
+		six.print_( "🞍 -f or --font: The path to a font file to use." )
+		six.print_( "🞍 -g or --generate: The number of comics to generate. Defaults to", self.numberOfComicsDefault )
+		six.print_( "🞍 -h or --help: Display this usage info." )
+		six.print_( "🞍 -i or --indir: The directory in which to look for inputs (must have fonts/, images/, transcripts/, and word-bubbles/ subdirectories). Defaults to", self.inDirDefault )
+		six.print_( "🞍 -l or --login-name: a username to log in to WordPress with. Only applicable in combination with --login-password and --WordPress-uri. Defaults to", self.loginNameDefault )
+		six.print_( "🞍 -n or --no-gui: Do not show a GUI. Defaults to ", self.noGUIDefault )
+		six.print_( "🞍 -o or --outtextfile: The name of a text file to save the resulting sentences to. Defaults to", self.outTextFileNameDefault )
+		six.print_( "🞍 -p or --outimagefile: The name of an image file to save the resulting comic to. Numbers will be appended if multiple comics are generated. Defaults to", self.outImageFileNameDefault )
+		six.print_( '🞍 -r or --randomize-capitals: Some comic fonts have alternate capital letter forms instead of lower-case letters. In that case, using random "upper-case" and "lower-case" letters actually results in all upper-case letters but with a somewhat more handwriting-like look. Defaults to', self.randomizeCapitalsDefault )
+		six.print_( "🞍 -s or --silent: Prevents output on standard out. Defaults to", self.silenceDefault )
+		six.print_( "🞍 -t or --top: The path to an image which will be appended at the top of each comic. Should be the same width as the comic images. Good for names or logos." )
+		six.print_( "🞍 -u or --WordPress-uri: The URI of a WordPress blog's xmlrpc.php file. Specify this if you want the comic automatically uploaded as a blog post. Will probably require that --login-name and --login-password be specified too (this is up to WordPress, not us). Defaults to", self.WordPressURIDefault )
+		six.print_( "🞍 -w or --saveforweb: If specified, saves the images using settings which result in a smaller file size, possibly at the expense of image quality." )
 
 
 	def isWritable( self, fileName ):
@@ -461,7 +305,7 @@ class MarkovApp( App ):
 		try:
 			options, argsLeft = getopt.getopt( sys.argv[ 1: ], "swhni:o:p:g:f:t:ru:l:a:c:b:d:", [ "silent", "saveforweb", "help", "no-gui", "indir=", "outtextfile=", "outimagefile=", "generate=", "font=", "top=", "randomize-capitals", "WordPress-uri=", "login-name=", "login-password=", "comic-id=", "long-name=", "short-name=" ] )
 		except getopt.GetoptError as error:
-			print( error )
+			six.print_( error )
 			self.usage()
 			sys.exit( EX_USAGE );
 
@@ -507,41 +351,41 @@ class MarkovApp( App ):
 		#Verify user input
 		#commandLineFont is not verified here; it will be verified when loading the font.
 		if not os.path.isdir( self.inDir ):
-			print( "Error:", self.inDir, "is not a directory.", file=sys.stderr )
+			six.print_( "Error:", self.inDir, "is not a directory.", file=sys.stderr )
 			exit( EX_NOINPUT )
 		elif os.path.exists( self.outTextFileName ) and not os.path.isfile(self. outTextFileName ):
-			print( "Error:", self.outTextFileName, "is not a file.", file=sys.stderr )
+			six.print_( "Error:", self.outTextFileName, "is not a file.", file=sys.stderr )
 			exit( EX_CANTCREAT )
 		elif not self.isWritable( self.outTextFileName ):
-			print( "Error:", self.outTextFileName, "is not writable.", file=sys.stderr )
+			six.print_( "Error:", self.outTextFileName, "is not writable.", file=sys.stderr )
 			exit( EX_CANTCREAT )
 		elif os.path.exists( self.outImageFileName ) and not os.path.isfile( self.outImageFileName ):
-			print( "Error:",self. outImageFileName, "is not a file.", file=sys.stderr )
+			six.print_( "Error:",self. outImageFileName, "is not a file.", file=sys.stderr )
 			exit( EX_CANTCREAT )
 		elif not self.isWritable( self.outImageFileName ):
-			print( "Error:", self.outImageFileName, "is not writable.", file = sys.stderr )
+			six.print_( "Error:", self.outImageFileName, "is not writable.", file = sys.stderr )
 			exit( EX_CANTCREAT )
 		elif self.numberOfComics < 1:
-			print( "Error: Number of comics (", self.numberOfComics, ") is less than 1.", file=sys.stderr )
+			six.print_( "Error: Number of comics (", self.numberOfComics, ") is less than 1.", file=sys.stderr )
 			exit( EX_USAGE )
 		elif self.topImageFileName != None:
 			if not os.path.exists( self.topImageFileName ):
-				print( "Error:", self.topImageFileName, "does not exist.", file=sys.stderr )
+				six.print_( "Error:", self.topImageFileName, "does not exist.", file=sys.stderr )
 				exit( EX_NOINPUT )
 			elif not os.path.isfile( self.topImageFileName ):
-				print( "Error:", self.topImageFileName, "is not a file.", file=sys.stderr )
+				six.print_( "Error:", self.topImageFileName, "is not a file.", file=sys.stderr )
 				exit( EX_NOINPUT )
 			elif not os.access( self.topImageFileName, os.R_OK ):
-				print( "Error:", self.topImageFileName, "is not readable (permission error - did you mess up a chmod?)", file = sys.stderr )
+				six.print_( "Error:", self.topImageFileName, "is not readable (permission error - did you mess up a chmod?)", file = sys.stderr )
 				exit( EX_NOPERM )
 		elif self.loginName is not None and len( self.loginName ) < 1:
-			print( "Error: loginName has length zero." )
+			six.print_( "Error: loginName has length zero." )
 			exit( EX_USAGE )
 		elif self.loginPassword is not None and len( self.loginPassword ) < 1:
-			print( "Error: loginPassword has length zero." )
+			six.print_( "Error: loginPassword has length zero." )
 			exit( EX_USAGE )
 		elif ( self.commandLineComicID is not None ) and not idChecker.checkString( self.commandLineComicID ):
-			print( "Error:", self.commandLineComicID, "is not a valid comic ID" )
+			six.print_( "Error:", self.commandLineComicID, "is not a valid comic ID" )
 			exit( EX_USAGE )
 
 
@@ -555,11 +399,11 @@ class MarkovApp( App ):
 				else:
 					wordBubbleFileName = os.path.join( self.wordBubblesDir, self.commandLineComicID + ".tsv" )
 			except IndexError as error:
-				print( error, file=sys.stderr )
+				six.print_( error, file=sys.stderr )
 				exit( EX_NOINPUT )
 			
 			if not self.silence:
-				print( "wordBubbleFileName:", wordBubbleFileName )
+				six.print_( "wordBubbleFileName:", wordBubbleFileName )
 			
 			if self.commandLineComicID is None:
 				comicID = os.path.splitext( wordBubbleFileName )[ 0 ]
@@ -567,16 +411,16 @@ class MarkovApp( App ):
 				comicID = self.commandLineComicID
 			wordBubbleFileName = os.path.join( self.wordBubblesDir, wordBubbleFileName )
 			if not self.silence:
-				print( "Loading word bubbles from", wordBubbleFileName )
+				six.print_( "Loading word bubbles from", wordBubbleFileName )
 
 			try:
-				wordBubbleFile = open( file=wordBubbleFileName, mode="rt" )
+				wordBubbleFile = open( wordBubbleFileName, mode="rt" )
 			except OSError as error:
-				print( error, file=sys.stderr )
+				six.print_( error, file=sys.stderr )
 				exit( EX_NOINPUT )
 			
 			if not idChecker.checkFile( wordBubbleFile, wordBubbleFileName, self.commentMark ):
-				print( "Error: Word bubble file", wordBubbleFileName, "is not in the correct format." )
+				six.print_( "Error: Word bubble file", wordBubbleFileName, "is not in the correct format." )
 				exit( EX_DATAERR )
 			
 			lookForSpeakers = True
@@ -593,16 +437,16 @@ class MarkovApp( App ):
 					lookForSpeakers = False; #End of file reached, no speakers found
 			
 			if len( speakers ) == 0:
-				print( "Error: Word bubble file", wordBubbleFileName, "contains no speakers." )
+				six.print_( "Error: Word bubble file", wordBubbleFileName, "contains no speakers." )
 				exit( EX_DATAERR )
 			
 			if not self.silence:
-				print( "These characters speak:", speakers )
+				six.print_( "These characters speak:", speakers )
 			
 			for speaker in speakers:
 				if speaker not in self.generators:
 					if not self.silence:
-						print( "Now building a Markov graph for character", speaker, "..." )
+						six.print_( "Now building a Markov graph for character", speaker, "..." )
 					newGenerator = Generator( charLabel = speaker, cm = self.commentMark, randomizeCapitals = self.randomizeCapitals )
 					newGenerator.buildGraph( self.inDir )
 					
@@ -612,14 +456,14 @@ class MarkovApp( App ):
 					self.generators[ speaker ] = newGenerator
 			
 			if not self.silence:
-				print( comicID )
+				six.print_( comicID )
 			
 			inImageFileName = os.path.join( self.imageDir, comicID + ".png" )
 			
 			try:
 				image = Image.open( inImageFileName ).convert() #Text rendering looks better if we ensure the image's mode is not palette-based. Calling convert() with no mode argument does this.
 			except IOError as error:
-				print( error, file=sys.stderr )
+				six.print_( error, file=sys.stderr )
 				exit( EX_NOINPUT )
 			
 			transcript = str( comicID ) + "\n"
@@ -636,7 +480,7 @@ class MarkovApp( App ):
 					try:
 						generator = self.generators[ character ]
 					except:
-						print( "Error: Word bubble file", wordBubbleFileName, "does not list", character, "in its list of speakers.", file=sys.stderr )
+						six.print_( "Error: Word bubble file", wordBubbleFileName, "does not list", character, "in its list of speakers.", file=sys.stderr )
 						exit( EX_DATAERR )
 					
 					topLeftX = int( line[ 1 ] )
@@ -658,7 +502,7 @@ class MarkovApp( App ):
 						oneCharacterTranscript = character + ": "
 						oneCharacterTranscript += self.stringFromNodes( nodeList )
 						if not self.silence:
-							print( oneCharacterTranscript )
+							six.print_( oneCharacterTranscript )
 						oneCharacterTranscript += "\n"
 						transcript += oneCharacterTranscript
 						
@@ -708,9 +552,9 @@ class MarkovApp( App ):
 									normalFont = ImageFont.truetype( self.normalFontFile, size = size )
 									boldFont = ImageFont.truetype( self.boldFontFile, size = size )
 								except IOError as error:
-									print( error, "\nUsing default font instead.", file=sys.stderr )
+									six.print_( error, "\nUsing default font instead.", file=sys.stderr )
 									normalFont = ImageFont.load_default()
-									boldFont = ImageFont.loa_default()
+									boldFont = ImageFont.load_default()
 								listoflists = self.rewrap_nodelistlist( nodeList, normalFont, boldFont, width, fontSize = size )
 						
 						midX = int( wordBubble.size[ 0 ] / 2 )
@@ -783,15 +627,15 @@ class MarkovApp( App ):
 			#---------------------------Split into separate function
 			try:
 				#os.makedirs( os.path.dirname( outTextFileName ), exist_ok = True )
-				outFile = open( file=self.outTextFileName, mode="wt" )
+				outFile = open( self.outTextFileName, mode="wt" )
 			except OSError as error:
-				print( error, "\nUsing standard output instead", file=sys.stderr )
+				six.print_( error, "\nUsing standard output instead", file=sys.stderr )
 				outFile = sys.stdout
 			
 			if self.numberOfComics > 1:
 				self.outTextFileName = oldOutTextFileName
 			
-			print( transcript, file=outFile )
+			six.print_( transcript, file=outFile )
 			
 			outFile.close()
 			
@@ -804,7 +648,7 @@ class MarkovApp( App ):
 				try:
 					topImage = Image.open( self.topImageFileName ).convert( mode=image.mode )
 				except IOError as error:
-					print( error, file=sys.stderr )
+					six.print_( error, file=sys.stderr )
 					exit( EX_NOINPUT )
 				oldSize = topImage.size
 				size = ( max( topImage.size[ 0 ], image.size[ 0 ] ), topImage.size[ 1 ] + image.size[ 1 ] )
@@ -838,8 +682,16 @@ class MarkovApp( App ):
 			#According to the Pillow documentation, key names should be "latin-1 encodable". I take this to mean that we ourselves don't need to encode it in latin-1.
 			key = "transcript"
 			keyUTF8 = key.encode( "utf-8", errors=encodingErrors )
-			transcriptISO = transcriptWithURL.encode( "iso-8859-1", errors=encodingErrors )
-			transcriptUTF8 = transcriptWithURL.encode( "utf-8", errors=encodingErrors )
+			
+			#uncomment the following if using Python 3
+			#transcriptISO = transcriptWithURL.encode( "iso-8859-1", errors=encodingErrors )
+			#transcriptUTF8 = transcriptWithURL.encode( "utf-8", errors=encodingErrors )
+			
+			#python 2:
+			tempencode = transcriptWithURL.decode( 'ascii', errors='replace' ) # I really don't like using this ascii-encoded intermediary called tempencode, but i couldn't get the program to work when encoding directly to latin-1
+			transcriptISO = tempencode.encode( "iso-8859-1", errors='replace' )
+			transcriptUTF8 = tempencode.encode( "utf-8", errors='replace' )
+			
 			
 			infoToSave.add_itxt( key=key, value=transcriptUTF8, tkey=keyUTF8 )
 			infoToSave.add_text( key=key, value=transcriptISO )
@@ -859,14 +711,14 @@ class MarkovApp( App ):
 				else:
 					image.save( self.outImageFileName, format="PNG", pnginfo=infoToSave )
 			except IOError as error:
-				print( error, file = sys.stderr )
+				six.print_( error, file = sys.stderr )
 				exit( EX_CANTCREAT )
 			except OSError as error:
-				print( error, file = sys.stderr )
+				six.print_( error, file = sys.stderr )
 				exit( EX_CANTCREAT )
 			
 			if not self.silence:
-				print( "Original comic URL:", originalURL )
+				six.print_( "Original comic URL:", originalURL )
 			
 			for blog in self.blogUploaders:
 				blog.upload( postStatus = "publish", inputFileName = outImageFileName, shortComicTitle = self.shortName, longComicTitle = self.longName, transcript = transcript, originalURL = originalURL, silence = self.silence )
@@ -875,9 +727,11 @@ class MarkovApp( App ):
 				outImageFileName = oldOutImageFileName
 		#end of loop: for generatedComicNumber in range( numberOfComics ):
 		
-		#---------------------------It's blitting time!
-		self.gui.comicArea.texture = Texture.create( size = image.size )
-		self.gui.comicArea.texture.blit_buffer( image.transpose( Image.FLIP_TOP_BOTTOM ).tobytes() )
+		#---------------------------It's display time!
+		if image.mode != "RGB":
+			image = image.convert( mode = "RGB" )
+		self.gui.comicArea.texture = Texture.create( size = image.size, colorfmt = 'rgb' )
+		self.gui.comicArea.texture.blit_buffer( pbuffer = image.transpose( Image.FLIP_TOP_BOTTOM ).tobytes(), colorfmt = 'rgb' )
 	
 	def runGUI( self ):
 		self.run()

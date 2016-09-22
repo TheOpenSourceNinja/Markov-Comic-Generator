@@ -1,7 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
+# coding=utf-8
 
+from __future__ import division
 import random
-
 
 class MarkovNode:
 	def __init__( self, word, nonRandomizedWord, isEnd = False, isBold = False, isItalic = False, isUnderlined = False, font = None ):

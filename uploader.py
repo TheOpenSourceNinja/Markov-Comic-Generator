@@ -1,11 +1,19 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
+# coding=utf-8
 
+import six
 import mimetypes
-import xmlrpc.client as client
+try:
+	import xmlrpc.client as client
+except ImportError as e:
+	import xmlrpclib as client
 from datetime import datetime
 from os import path
 from sys import stderr
-from urllib.parse import urlparse
+try:
+	from urllib.parse import urlparse
+except ImportError as e:
+	import urlparse
 
 
 class Uploader:
@@ -41,7 +49,7 @@ class WordPressUploader( Uploader ):
 		
 		#if not self.uri.startswith( "https://" ):
 		if urlparse( self.uri ).scheme not in [ "file", "https", "sftp", "shttp", "sips", "snews", "svn+ssh" ]:
-			print( "SECURITY WARNING: URI does not use any known secure protocol. USERNAMES and PASSWORDS are being transmitted in CLEARTEXT!", "\nThis is the URI:", uri, file = stderr )
+			six.print_( "SECURITY WARNING: URI does not use any known secure protocol. USERNAMES and PASSWORDS are being transmitted in CLEARTEXT!", "\nThis is the URI:", uri, file = stderr )
 		
 		self.username = str( username )
 		self.password = str( password )
@@ -50,18 +58,18 @@ class WordPressUploader( Uploader ):
 		try:
 			blogInfo = self.server.wp.getUsersBlogs( self.username, self.password )
 		except client.Fault as fault: #How is a fault different from an error? Beats me.
-			print( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
-			print( "Fault string: %s" % fault.faultString, file = stderr )
-			print( "Username:", self.username, "Password:", self.password )
+			six.print_( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
+			six.print_( "Fault string: %s" % fault.faultString, file = stderr )
+			six.print_( "Username:", self.username, "Password:", self.password )
 			return
 		except client.ProtocolError as error:
-			print( "A protocol error occurred. URL: %s" % error.url, file = stderr )
-			print( "HTTP(S) headers: %s" % error.headers, file = stderr )
-			print( "Error code: %d" % error.errcode, file = stderr )
-			print( "Error message: %s" % error.errmsg, file = stderr )
+			six.print_( "A protocol error occurred. URL: %s" % error.url, file = stderr )
+			six.print_( "HTTP(S) headers: %s" % error.headers, file = stderr )
+			six.print_( "Error code: %d" % error.errcode, file = stderr )
+			six.print_( "Error message: %s" % error.errmsg, file = stderr )
 			return
 		except client.Error as error:
-			print( "An error occurred:", error, file = stderr )
+			six.print_( "An error occurred:", error, file = stderr )
 			return
 		
 		if blogID is None:
@@ -135,7 +143,7 @@ class WordPressUploader( Uploader ):
 		
 		fileType = mimetypes.guess_type( inputFileName )
 		if fileType[ 0 ] is None:
-			print( 'Warning: MIME type could not be guessed. Uploading with no MIME type specified.', file = stderr )
+			six.print_( 'Warning: MIME type could not be guessed. Uploading with no MIME type specified.', file = stderr )
 		else:
 			fileData[ "type" ] = fileType[ 0 ]
 			
@@ -154,7 +162,7 @@ class WordPressUploader( Uploader ):
 			fileUploadResult = self.server.wp.uploadFile( self.blogID, self.username, self.password, fileData )
 			
 			if not silence:
-				print( "File upload result:", fileUploadResult )
+				six.print_( "File upload result:", fileUploadResult )
 			
 			post[ "post_content" ] = '<a href="' + fileUploadResult[ "url" ] + '"><img class="aligncenter size-full img-zoomable wp-image-' + fileUploadResult[ "id" ] + '" src="' + fileUploadResult[ "url" ] + '" alt="' + transcript + '" /></a>Click the image for full size.<p>Transcript:</p><p class="comic-transcript">' + transcript + '</p>'
 			
@@ -165,20 +173,20 @@ class WordPressUploader( Uploader ):
 			postUploadResult = self.server.wp.newPost( self.blogID, self.username, self.password, post )
 			
 			if not silence:
-				print( "Post upload result:", postUploadResult )
+				six.print_( "Post upload result:", postUploadResult )
 			
 		except client.Fault as fault:
-			print( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
-			print( "Fault string: %s" % fault.faultString, file = stderr )
+			six.print_( "A fault occurred. Fault code %d." % fault.faultCode, file = stderr )
+			six.print_( "Fault string: %s" % fault.faultString, file = stderr )
 			return fault.faultCode
 		except client.ProtocolError as error:
-			print( "A protocol error occurred. URL: %s" % error.url, file = stderr )
-			print( "HTTP(S) headers: %s" % error.headers, file = stderr )
-			print( "Error code: %d" % error.errcode, file = stderr )
-			print( "Error message: %s" % error.errmsg, file = stderr )
+			six.print_( "A protocol error occurred. URL: %s" % error.url, file = stderr )
+			six.print_( "HTTP(S) headers: %s" % error.headers, file = stderr )
+			six.print_( "Error code: %d" % error.errcode, file = stderr )
+			six.print_( "Error message: %s" % error.errmsg, file = stderr )
 			return error.errcode
 		except client.Error as error:
-			print( "An error occurred:", error, file = stderr )
+			six.print_( "An error occurred:", error, file = stderr )
 			return -1
 		
 		

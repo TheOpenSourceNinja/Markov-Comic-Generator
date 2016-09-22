@@ -1,5 +1,7 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
+# coding=utf-8
 
+import six
 import os
 import random
 import sys
@@ -39,9 +41,9 @@ class Generator:
 		'''Shows a few stats on standard output. Shouldn't be called before buildGraph().
 		'''
 		if self.numInputSentences > 0:
-			print( "Character " + self.charLabel + " has a total of " + str( self.numInputWords ) + " words over " + str( self.numInputSentences ) + " sentences for an average of " + str( self.numInputWords / self.numInputSentences ) + " words/sentence.")
+			six.print_( "Character " + self.charLabel + " has a total of " + str( self.numInputWords ) + " words over " + str( self.numInputSentences ) + " sentences for an average of " + str( self.numInputWords / self.numInputSentences ) + " words/sentence.")
 		else:
-			print( "Character " + self.charLabel + " has a total of " + str( self.numInputWords ) + " words." )
+			six.print_( "Character " + self.charLabel + " has a total of " + str( self.numInputWords ) + " words." )
 	
 	def buildGraph( self, inDir ):
 		'''Build the Markov graph for this generator's comic character.
@@ -52,11 +54,11 @@ class Generator:
 		
 		for inFileName in os.listdir( transcriptDir ):
 			inFileName = os.path.join( transcriptDir, inFileName )
-			inFile = open( file=inFileName, mode="rt" )
+			inFile = open( inFileName, mode="rt" )
 			
 			idc = idChecker()
 			if not idc.checkFile( inFile, inFileName, self.commentMark ):
-				print( "Error: File", inFileName, "is not a properly formatted transcript.", file=sys.stderr )
+				six.print_( "Error: File", inFileName, "is not a properly formatted transcript.", file=sys.stderr )
 				break;
 		
 			for line in inFile:
