@@ -6,7 +6,7 @@ Contains transcripts and text-erased versions of [Mimi and Eunice](http://mimian
 # Purposes of this project
 The main point of this project is to create transcripts that will work with [Markov Comic Generator](https://github.com/dearingj/Markov-Comic-Generator). That is not all, though: I made this a separate repository on GitHub because the transcription of dialog and the erasing of it from the images should ease translation and other recycling of this part of our culture.
 
-For an example of what results when these transcripts are used with Markov Comic Generator, see [Mimi and Markov](https://www.theopensource.ninja/programming/mimi-and-markov/).
+For an example of what results when these transcripts are used with Markov Comic Generator, see [Mimi and Markov](https://www.theopensource.ninja/category/mimi-and-markov/).
 
 # File formats and organization
 See the Markov Comic Generator program's readme for descriptions of the file formats used.
